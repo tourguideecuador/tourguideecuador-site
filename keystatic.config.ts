@@ -26,20 +26,21 @@ const storage = import.meta.env.DEV
       : ({ kind: 'local' } as const);
 
 const seoFields = {
-  metaTitle: fields.text({ label: 'Meta title', description: 'SEO <title> (carried from old site).' }),
+  metaTitle: fields.text({ label: 'Meta title', validation: { length: { min: 1 } }, description: 'SEO <title> (carried from old site).' }),
   metaDescription: fields.text({
     label: 'Meta description',
     multiline: true,
+    validation: { length: { min: 1 } },
     description: 'SEO meta description — keep ≤ 160 characters. Never leave blank.',
   }),
 };
 
-const heroFields = (dir: string) => ({
+const heroFields = (dir: string, required = false) => ({
   heroImage: fields.image({
     label: 'Hero image',
     directory: `src/assets/${dir}`,
     publicPath: `../../assets/${dir}/`,
-    validation: { isRequired: false },
+    validation: { isRequired: required },
   }),
   heroImageAlt: fields.text({ label: 'Hero image alt text', description: 'Describe the photo for accessibility & SEO.' }),
 });
@@ -105,8 +106,8 @@ export default config({
       schema: {
         title: fields.slug({ name: { label: 'Title' } }),
         slug: fields.text({ label: 'URL slug (preserve old)', description: 'Old WordPress slug for 301s.' }),
-        destination: fields.relationship({ label: 'Destination', collection: 'destinations' }),
-        type: fields.relationship({ label: 'Primary tour type', collection: 'tourTypes' }),
+        destination: fields.relationship({ label: 'Destination', collection: 'destinations', validation: { isRequired: true } }),
+        type: fields.relationship({ label: 'Primary tour type', collection: 'tourTypes', validation: { isRequired: true } }),
         secondaryTypes: fields.array(
           fields.relationship({ label: 'Secondary tour type', collection: 'tourTypes' }),
           { label: 'Secondary tour types', itemLabel: (props) => props.value ?? 'Type' },
@@ -115,8 +116,8 @@ export default config({
         priceFrom: fields.number({ label: 'Price from (USD) — optional, via Bokun' }),
         bokunExperienceId: fields.text({ label: 'Bokun experience ID (⏳ later)' }),
         featured: fields.checkbox({ label: 'Featured on homepage' }),
-        excerpt: fields.text({ label: 'Excerpt', multiline: true }),
-        ...heroFields('tours'),
+        excerpt: fields.text({ label: 'Excerpt', multiline: true, validation: { length: { min: 1 } } }),
+        ...heroFields('tours', true),
         gallery: gallery('tours'),
         ...seoFields,
         content: fields.mdx({ label: 'Body' }),
@@ -147,8 +148,8 @@ export default config({
         cabins: fields.number({ label: 'Cabins' }),
         capacity: fields.number({ label: 'Guests' }),
         featured: fields.checkbox({ label: 'Featured on homepage' }),
-        excerpt: fields.text({ label: 'Excerpt', multiline: true }),
-        ...heroFields('cruises'),
+        excerpt: fields.text({ label: 'Excerpt', multiline: true, validation: { length: { min: 1 } } }),
+        ...heroFields('cruises', true),
         gallery: gallery('cruises'),
         ...seoFields,
         content: fields.mdx({ label: 'Body' }),
@@ -163,7 +164,7 @@ export default config({
       schema: {
         title: fields.slug({ name: { label: 'Title' } }),
         slug: fields.text({ label: 'URL slug (preserve old)' }),
-        excerpt: fields.text({ label: 'Excerpt', multiline: true }),
+        excerpt: fields.text({ label: 'Excerpt', multiline: true, validation: { length: { min: 1 } } }),
         featured: fields.checkbox({ label: 'Featured on homepage' }),
         ...heroFields('destinations'),
         ...seoFields,
@@ -179,7 +180,7 @@ export default config({
       schema: {
         title: fields.slug({ name: { label: 'Title' } }),
         slug: fields.text({ label: 'URL slug (preserve old)' }),
-        excerpt: fields.text({ label: 'Excerpt', multiline: true }),
+        excerpt: fields.text({ label: 'Excerpt', multiline: true, validation: { length: { min: 1 } } }),
         ...heroFields('tourTypes'),
         ...seoFields,
         content: fields.mdx({ label: 'Body' }),

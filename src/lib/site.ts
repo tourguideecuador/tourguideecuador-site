@@ -1,6 +1,34 @@
 // Central site config. Editable values come from src/data/settings.json (managed
 // in Keystatic by the client); this module derives the rest and keeps a stable API.
-import settings from '../data/settings.json';
+import settingsData from '../data/settings.json';
+
+// Keystatic omits empty optional fields when it saves, so the JSON shape varies by
+// what the client has filled in. Model the optional fields as optional here so this
+// module stays type-safe regardless. Consumers already guard on these being absent.
+interface Settings {
+  name: string;
+  tagline: string;
+  email: string;
+  whatsappNumber: string;
+  address: string;
+  city: string;
+  country: string;
+  nytQuote: string;
+  licenseNumber?: string | null;
+  tripadvisorUrl?: string | null;
+  instagramUrl?: string | null;
+  facebookUrl?: string | null;
+  hero: {
+    eyebrow: string;
+    heading: string;
+    subheading: string;
+    ctaPrimaryLabel: string;
+    ctaPrimaryHref: string;
+    ctaSecondaryLabel: string;
+    ctaSecondaryHref: string;
+  };
+}
+const settings = settingsData as Settings;
 
 const num = settings.whatsappNumber.replace(/\D/g, '');
 const display = `+${num.slice(0, 3)} ${num.slice(3, 5)} ${num.slice(5, 8)} ${num.slice(8)}`.trimEnd();
