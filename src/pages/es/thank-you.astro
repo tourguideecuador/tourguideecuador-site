@@ -1,0 +1,14 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import ThankYou from '../../components/ThankYou.astro';
+import { localizePath } from '../../i18n/ui';
+---
+<SiteLayout
+  localized
+  title="Gracias — Tour Guide Ecuador"
+  description="Gracias por tu consulta. Te responderemos en un día hábil."
+  canonicalPath={localizePath('/thank-you', 'es')}
+  noindex
+>
+  <ThankYou />
+</SiteLayout>

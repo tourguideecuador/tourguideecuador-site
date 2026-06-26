@@ -1,0 +1,55 @@
+---
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import Breadcrumbs from './Breadcrumbs.astro';
+import TourCard from './TourCard.astro';
+import CruiseCard from './CruiseCard.astro';
+import UntranslatedNotice from './UntranslatedNotice.astro';
+import { getTours, getCruises, destinationUrl } from '../lib/content';
+import { getLangFromUrl, useTranslations, localizePath } from '../i18n/ui';
+import type { Destination } from '../lib/content';
+
+interface Props { destination: Destination }
+const { destination } = Astro.props;
+const d = destination.data;
+const lang = getLangFromUrl(Astro.url);
+const es = lang === 'es';
+const t = useTranslations(lang);
+const L = (p: string) => localizePath(p, lang);
+const { Content } = await render(destination);
+const tours = (await getTours()).filter((x) => x.data.destination.id === destination.id);
+const cruises = destination.id === 'galapagos' ? await getCruises() : [];
+const canonical = L(destinationUrl(d.slug));
+const toursLabel = es
+  ? `${tours.length} ${tours.length === 1 ? 'tour' : 'tours'} en ${d.title}`
+  : `${tours.length} ${tours.length === 1 ? 'tour' : 'tours'} in ${d.title}`;
+---
+<section class="relative isolate overflow-hidden bg-ink-900">
+  {d.heroImage && <Image src={d.heroImage} alt={d.heroImageAlt ?? d.title} widths={[768, 1280, 1800]} sizes="100vw" transition:name={`dest-img-${d.slug}`} class="absolute inset-0 h-full w-full object-cover opacity-65" loading="eager" />}
+  <div class="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/40 to-ink-950/30"></div>
+  <div class="container-page relative py-16 text-white sm:py-24">
+    <div class="[&_*]:!text-white/80"><Breadcrumbs items={[{ name: t('nav.destinations'), url: L('/destinations') }, { name: d.title, url: canonical }]} /></div>
+    <p class="eyebrow mt-6 text-brand-300">{es ? 'Destino' : 'Destination'}</p>
+    <h1 class="mt-3 max-w-3xl font-display text-[clamp(2.4rem,5.5vw,4rem)] font-medium text-white">{d.title}</h1>
+    <div class="prose-tge mt-4 max-w-2xl [&_*]:!text-white/85"><Content /></div>
+  </div>
+</section>
+
+<UntranslatedNotice />
+
+{cruises.length > 0 && (
+  <section class="container-page py-16">
+    <h2 class="font-display text-2xl sm:text-3xl">{t('nav.cruises')}</h2>
+    <div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{cruises.slice(0, 6).map((c) => <CruiseCard cruise={c} />)}</div>
+    <a href={L('/cruises')} class="btn btn-outline mt-8">{es ? 'Ver los 13 cruceros →' : 'See all 13 cruises →'}</a>
+  </section>
+)}
+
+<section class="container-page py-16">
+  <h2 class="font-display text-2xl sm:text-3xl">{toursLabel}</h2>
+  {tours.length > 0 ? (
+    <div class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{tours.map((x) => <TourCard tour={x} />)}</div>
+  ) : (
+    <p class="mt-4 text-ink-500">{es ? 'Estamos añadiendo tours aquí — ' : "We're adding tours here — "}<a class="text-brand-600 hover:underline" href={L('/contact-us')}>{es ? 'consúltanos' : 'ask us'}</a>{es ? ' qué es posible.' : " what's possible."}</p>
+  )}
+</section>

@@ -1,0 +1,136 @@
+---
+import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+import { getLangFromUrl, unlocalizePath, localizePath } from '../i18n/ui';
+
+export interface Props {
+  title: string;
+  description: string;
+  image?: string;
+  canonicalPath?: string;
+  noindex?: boolean;
+  localized?: boolean; // true when this page also has an /es counterpart
+}
+
+const { title, description, image, canonicalPath, noindex = false, localized = false } = Astro.props;
+const siteName = 'Tour Guide Ecuador';
+const lang = getLangFromUrl(Astro.url);
+// Built pages serve at trailing-slash URLs (Astro directory format) and the sitemap
+// uses them too — keep canonical + hreflang consistent so none of them 301-redirect.
+const withSlash = (p: string) => (p.endsWith('/') ? p : `${p}/`);
+const canonical = new URL(withSlash(canonicalPath ?? Astro.url.pathname), Astro.site).toString();
+const ogImage = new URL(image ?? '/og-default.jpg', Astro.site).toString();
+const enPath = unlocalizePath(canonicalPath ?? Astro.url.pathname);
+const altEn = new URL(withSlash(enPath), Astro.site).toString();
+const altEs = new URL(withSlash(localizePath(enPath, 'es')), Astro.site).toString();
+const ogLocale = lang === 'es' ? 'es_ES' : 'en_US';
+const ogLocaleAlt = lang === 'es' ? 'en_US' : 'es_ES';
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#d86000" />
+    <!-- Mark JS active before paint so reveal animations never hide content for no-JS/crawlers -->
+    <script is:inline>document.documentElement.classList.add('js');</script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonical} />
+    {localized && (
+      <>
+        <link rel="alternate" hreflang="en" href={altEn} />
+        <link rel="alternate" hreflang="es" href={altEs} />
+        <link rel="alternate" hreflang="x-default" href={altEn} />
+      </>
+    )}
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex,nofollow" />}
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:locale" content={ogLocale} />
+    {localized && <meta property="og:locale:alternate" content={ogLocaleAlt} />}
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <ClientRouter />
+    <slot name="head" />
+  </head>
+  <body class="min-h-screen bg-sand-100 text-ink-900 antialiased">
+    <!-- pull-to-refresh indicator (mobile) -->
+    <div id="ptr" aria-hidden="true" class="pointer-events-none fixed inset-x-0 top-0 z-[60] flex justify-center">
+      <div id="ptr-pill" class="glass-chip mt-2 flex h-10 w-10 translate-y-[-72px] items-center justify-center rounded-full text-brand-600 opacity-0 shadow-lg">
+        <svg id="ptr-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 3v5h5"/></svg>
+      </div>
+    </div>
+
+    <slot />
+
+    <script>
+      // ── runs on first load AND after every View Transition navigation ──
+      function setupReveals() {
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const targets = document.querySelectorAll('.reveal-up, [data-reveal-stagger]');
+        if (reduce || !('IntersectionObserver' in window)) {
+          targets.forEach((el) => el.setAttribute('data-revealed', ''));
+          return;
+        }
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) { e.target.setAttribute('data-revealed', ''); io.unobserve(e.target); }
+          });
+        }, { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+        targets.forEach((el) => { if (!el.hasAttribute('data-revealed')) io.observe(el); });
+      }
+
+      function setupPullToRefresh() {
+        const fine = window.matchMedia('(pointer: fine)').matches;
+        if (fine || (window as any).__ptrBound) return; // touch devices only; bind once
+        (window as any).__ptrBound = true;
+        const pill = document.getElementById('ptr-pill');
+        const icon = document.getElementById('ptr-icon');
+        if (!pill || !icon) return;
+        let startY = 0, pulling = false, dist = 0;
+        const THRESH = 78, MAX = 120;
+        const reset = () => { pill.style.transition = 'transform .3s ease, opacity .3s ease'; pill.style.transform = 'translateY(-72px)'; pill.style.opacity = '0'; icon.style.transform = 'rotate(0deg)'; };
+        addEventListener('touchstart', (e) => {
+          if (window.scrollY <= 0) { startY = e.touches[0].clientY; pulling = true; pill.style.transition = 'none'; }
+        }, { passive: true });
+        addEventListener('touchmove', (e) => {
+          if (!pulling) return;
+          dist = e.touches[0].clientY - startY;
+          if (dist <= 0) { pulling = false; reset(); return; }
+          const d = Math.min(dist * 0.5, MAX);
+          pill.style.transform = `translateY(${d - 72}px)`;
+          pill.style.opacity = String(Math.min(d / THRESH, 1));
+          icon.style.transform = `rotate(${d * 2.6}deg)`;
+        }, { passive: true });
+        addEventListener('touchend', () => {
+          if (!pulling) return;
+          pulling = false;
+          if (dist * 0.5 >= THRESH) {
+            pill.style.transition = 'transform .2s ease';
+            pill.style.transform = 'translateY(8px)';
+            pill.style.opacity = '1';
+            icon.style.animation = 'spin 0.7s linear infinite';
+            setTimeout(() => location.reload(), 380);
+          } else { reset(); }
+          dist = 0;
+        }, { passive: true });
+      }
+
+      document.addEventListener('astro:page-load', () => { setupReveals(); setupPullToRefresh(); });
+    </script>
+    <style is:global>
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+  </body>
+</html>

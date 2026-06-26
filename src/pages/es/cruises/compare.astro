@@ -1,0 +1,13 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import CruiseCompare from '../../../components/CruiseCompare.astro';
+import { localizePath } from '../../../i18n/ui';
+---
+<SiteLayout
+  localized
+  title="Comparar cruceros a Galápagos — lado a lado | Tour Guide Ecuador"
+  description="Compara las embarcaciones de crucero por Galápagos lado a lado: categoría, tipo de barco, cabinas, capacidad y más. Elige 2–4 barcos y encuentra el crucero ideal."
+  canonicalPath={localizePath('/cruises/compare', 'es')}
+>
+  <CruiseCompare />
+</SiteLayout>

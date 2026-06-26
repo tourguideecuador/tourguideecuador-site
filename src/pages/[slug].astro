@@ -1,0 +1,39 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import CruiseArticle from '../components/CruiseArticle.astro';
+import PageArticle from '../components/PageArticle.astro';
+
+// Cruises + content pages both live at top-level slugs (SEO: preserve permalinks).
+// `contact-us` has its own route; exclude it here to avoid a duplicate path.
+export async function getStaticPaths() {
+  const RESERVED = new Set(['contact-us']);
+  const { getCollection } = await import('astro:content');
+  const cruises = await getCollection('cruises');
+  const pages = await getCollection('pages');
+  return [
+    ...cruises.map((cruise) => ({ params: { slug: cruise.data.slug }, props: { kind: 'cruise' as const, cruise } })),
+    ...pages
+      .filter((p) => !RESERVED.has(p.data.slug) && !p.data.draft)
+      .map((page) => ({ params: { slug: page.data.slug }, props: { kind: 'page' as const, page } })),
+  ];
+}
+
+type SlugProps =
+  | { kind: 'cruise'; cruise: CollectionEntry<'cruises'> }
+  | { kind: 'page'; page: CollectionEntry<'pages'> };
+const props = Astro.props as SlugProps;
+const data = props.kind === 'cruise' ? props.cruise.data : props.page.data;
+const canonical = `/${data.slug}`;
+---
+<SiteLayout
+  localized
+  title={data.metaTitle}
+  description={data.metaDescription}
+  canonicalPath={canonical}
+  overlayHeader={props.kind === 'cruise'}
+>
+  {props.kind === 'cruise'
+    ? <CruiseArticle cruise={props.cruise} />
+    : <PageArticle page={props.page} />}
+</SiteLayout>

@@ -1,0 +1,39 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ReviewCard from '../../components/ReviewCard.astro';
+import Stars from '../../components/Stars.astro';
+import JsonLd from '../../components/JsonLd.astro';
+import { getReviews, aggregateRating } from '../../lib/content';
+import { reviewsSchema } from '../../lib/schema';
+import { SITE } from '../../lib/site';
+
+const reviews = await getReviews();
+const rating = await aggregateRating();
+const schemaReviews = reviews.map((r) => ({ author: r.data.author, rating: r.data.rating ?? 5, body: r.body?.trim() ?? '' }));
+---
+<SiteLayout
+  localized
+  canonicalPath="/es/reviews"
+  title="Opiniones — Tour Guide Ecuador"
+  description="Lo que dicen los viajeros sobre Tour Guide Ecuador — cruceros a Galápagos, city tours en Quito, Cotopaxi, Otavalo y más. Calificación 5★ y recomendados por The New York Times."
+>
+  <JsonLd slot="head" schema={reviewsSchema(schemaReviews, rating)} />
+  <section class="border-b border-sand-300 bg-sand-50">
+    <div class="container-page py-12 sm:py-16">
+      <Breadcrumbs items={[{ name: 'Opiniones', url: '/es/reviews' }]} />
+      <h1 class="mt-5 font-display text-[clamp(2.2rem,5vw,3.6rem)] font-medium">Viajeros sobre Tour Guide Ecuador</h1>
+      <div class="mt-4 flex flex-wrap items-center gap-4">
+        <Stars rating={rating.value} class="text-xl" />
+        <span class="text-ink-700"><strong>{rating.value.toFixed(1)}</strong> de {rating.count} opiniones</span>
+        <span class="hidden h-4 w-px bg-sand-300 sm:block"></span>
+        <span class="text-ink-600">“{SITE.nytQuote}”</span>
+      </div>
+    </div>
+  </section>
+  <section class="container-page py-12">
+    <div class="columns-1 gap-6 md:columns-2 lg:columns-3 [&>*]:mb-6 [&>*]:break-inside-avoid">
+      {reviews.map((r) => <ReviewCard review={r} />)}
+    </div>
+  </section>
+</SiteLayout>

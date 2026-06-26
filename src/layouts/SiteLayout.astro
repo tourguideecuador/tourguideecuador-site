@@ -1,0 +1,32 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import WhatsAppButton from '../components/WhatsAppButton.astro';
+import Lightbox from '../components/Lightbox.astro';
+import { getLangFromUrl } from '../i18n/ui';
+
+interface Props {
+  title: string;
+  description: string;
+  image?: string;
+  canonicalPath?: string;
+  noindex?: boolean;
+  overlayHeader?: boolean;
+  localized?: boolean;
+}
+const { overlayHeader = false, localized = false, ...seo } = Astro.props;
+// Show the language switcher only where a counterpart exists: ES pages always
+// have an EN original; EN pages must opt in via `localized`.
+const showLangSwitch = getLangFromUrl(Astro.url) === 'es' || localized;
+---
+<BaseLayout {...seo} localized={localized}>
+  <slot name="head" slot="head" />
+  <Header overlay={overlayHeader} langSwitch={showLangSwitch} />
+  <main id="main" class:list={[!overlayHeader && 'pt-[var(--header-h,4.75rem)]']}>
+    <slot />
+  </main>
+  <Footer />
+  <WhatsAppButton />
+  <Lightbox />
+</BaseLayout>

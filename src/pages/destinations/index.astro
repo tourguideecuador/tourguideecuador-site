@@ -1,0 +1,28 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import DestinationCard from '../../components/DestinationCard.astro';
+import { getDestinations } from '../../lib/content';
+const destinations = await getDestinations();
+---
+<SiteLayout
+  localized
+  title="Ecuador & Galápagos Destinations — Tour Guide Ecuador"
+  description="Explore Ecuador by destination — the Galápagos Islands, Quito, Cotopaxi, Otavalo, Mindo cloudforest, Cuenca, Antisana, Papallacta and the Equator line."
+  canonicalPath="/destinations"
+>
+  <section class="border-b border-sand-300 bg-sand-50">
+    <div class="container-page py-12 sm:py-16">
+      <Breadcrumbs items={[{ name: 'Destinations', url: '/destinations' }]} />
+      <h1 class="mt-5 max-w-3xl font-display text-[clamp(2.2rem,5vw,3.6rem)] font-medium">Where will Ecuador take you?</h1>
+      <p class="mt-4 max-w-2xl text-lg text-ink-600">Four worlds in one country — islands, Andes, Amazon and cloudforest. Start with a destination.</p>
+    </div>
+  </section>
+  <section class="container-page py-12">
+    <div class="grid auto-rows-[15rem] gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {destinations.map((d, i) => (
+        <DestinationCard destination={d} class={i === 0 ? 'sm:col-span-2 sm:row-span-2' : ''} />
+      ))}
+    </div>
+  </section>
+</SiteLayout>

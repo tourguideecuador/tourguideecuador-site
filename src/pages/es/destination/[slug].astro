@@ -1,0 +1,16 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import DestinationDetail from '../../../components/DestinationDetail.astro';
+import { getDestinations, destinationUrl } from '../../../lib/content';
+import { localizePath } from '../../../i18n/ui';
+
+export async function getStaticPaths() {
+  const destinations = await getDestinations();
+  return destinations.map((destination) => ({ params: { slug: destination.data.slug }, props: { destination } }));
+}
+const { destination } = Astro.props;
+const d = destination.data;
+---
+<SiteLayout localized title={d.metaTitle} description={d.metaDescription} canonicalPath={localizePath(destinationUrl(d.slug), 'es')}>
+  <DestinationDetail destination={destination} />
+</SiteLayout>

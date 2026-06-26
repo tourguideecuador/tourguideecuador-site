@@ -1,0 +1,28 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import JsonLd from '../../components/JsonLd.astro';
+import WildlifeCalendar from '../../components/WildlifeCalendar.astro';
+import { SITE } from '../../lib/site';
+import { localizePath } from '../../i18n/ui';
+
+const canonical = localizePath('/galapagos-wildlife-calendar', 'es');
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: 'Calendario de fauna de Galápagos — la mejor época para visitar',
+  description:
+    'Una guía mes a mes de la fauna, el clima y el estado del mar en Galápagos para ayudarte a elegir la mejor época para visitar.',
+  author: { '@type': 'Organization', name: SITE.name },
+  publisher: { '@type': 'Organization', name: SITE.name },
+  mainEntityOfPage: `${SITE.url}${canonical}`,
+};
+---
+<SiteLayout
+  localized
+  title="Calendario de fauna de Galápagos — la mejor época para visitar | Tour Guide Ecuador"
+  description="Calendario mes a mes de la fauna de Galápagos: cuándo ver albatros, el cortejo del piquero patas azules, crías de lobo marino, ballenas, tortugas anidando y el mejor buceo. Planea la época ideal."
+  canonicalPath={canonical}
+>
+  <JsonLd slot="head" schema={schema} />
+  <WildlifeCalendar />
+</SiteLayout>

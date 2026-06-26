@@ -1,0 +1,116 @@
+---
+import { Image } from 'astro:assets';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import CruiseCard from '../../components/CruiseCard.astro';
+import TourCard from '../../components/TourCard.astro';
+import DestinationCard from '../../components/DestinationCard.astro';
+import ReviewCard from '../../components/ReviewCard.astro';
+import CredibilityStrip from '../../components/CredibilityStrip.astro';
+import { SITE } from '../../lib/site';
+import { featuredCruises, featuredTours, featuredDestinations, getReviews, aggregateRating } from '../../lib/content';
+import hero from '../../assets/site/hero-cotopaxi.jpg';
+import JsonLd from '../../components/JsonLd.astro';
+import { travelAgencySchema } from '../../lib/schema';
+
+const cruises = await featuredCruises();
+const tours = await featuredTours();
+const destinations = await featuredDestinations();
+const reviews = (await getReviews()).slice(0, 3);
+const rating = await aggregateRating();
+---
+<SiteLayout
+  overlayHeader
+  localized
+  canonicalPath="/es"
+  title="Tour Guide Ecuador — Cruceros Galápagos y Tours a Medida en Ecuador"
+  description="Agencia de viajes en Quito: cruceros a Galápagos, island hopping y tours de día por la Amazonía y los Andes. Viajes a medida con guías locales — recomendados por The New York Times."
+>
+  <JsonLd slot="head" schema={travelAgencySchema(rating)} />
+
+  <section class="relative isolate flex min-h-[92svh] items-end overflow-hidden">
+    <Image src={hero} alt="El volcán Cotopaxi nevado bajo un cielo andino azul intenso" widths={[768, 1280, 1920, 2400]} sizes="100vw" fetchpriority="high" loading="eager" class="absolute inset-0 -z-10 h-full w-full object-cover" />
+    <div class="absolute inset-0 -z-10 bg-gradient-to-t from-ink-950/85 via-ink-950/30 to-ink-950/40"></div>
+    <div class="container-page w-full pb-16 pt-32 sm:pb-24">
+      <p class="eyebrow text-brand-300 reveal" style="animation-delay:.05s"><span class="text-white/90">Quito · Ecuador</span></p>
+      <h1 class="reveal mt-5 max-w-4xl font-display text-[var(--text-hero)] font-medium leading-[0.98] text-white" style="animation-delay:.12s">
+        Las Galápagos y el corazón salvaje del Ecuador, a tu manera.
+      </h1>
+      <p class="reveal mt-6 max-w-xl text-lg leading-relaxed text-white/85" style="animation-delay:.2s">
+        Cruceros a Galápagos a medida, island hopping y tours de día por los Andes, la Amazonía y el
+        bosque nublado — diseñados y guiados por locales que conocen cada isla y sendero.
+      </p>
+      <div class="reveal mt-9 flex flex-wrap items-center gap-4" style="animation-delay:.28s">
+        <a href="/es/cruises" class="btn btn-primary !px-7 !py-4 text-base">Descubre los cruceros a Galápagos</a>
+        <a href="/es/tours" class="btn btn-ghost !px-7 !py-4 text-base">Ver tours en Ecuador</a>
+      </div>
+    </div>
+  </section>
+
+  <CredibilityStrip />
+
+  <section class="container-page py-20 sm:py-28">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="eyebrow">Las Islas Encantadas</p>
+        <h2 class="mt-3 text-[var(--text-display)]">Cruceros destacados a Galápagos</h2>
+      </div>
+      <a href="/es/cruises" class="btn btn-outline">Las 13 embarcaciones →</a>
+    </div>
+    <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3" data-reveal-stagger>
+      {cruises.map((c, i) => <CruiseCard cruise={c} featured={i === 0} class={i === 0 ? 'lg:row-span-2 lg:col-span-1' : ''} />)}
+    </div>
+  </section>
+
+  <section class="bg-ink-900 py-20 text-sand-100 sm:py-28">
+    <div class="container-page">
+      <div class="max-w-2xl">
+        <p class="eyebrow text-brand-300">Cuatro mundos, un país</p>
+        <h2 class="mt-3 text-[var(--text-display)] text-white">¿A dónde te llevará el Ecuador?</h2>
+        <p class="mt-4 text-ink-300">Desde la línea ecuatorial hasta volcanes nevados, bosques nublados llenos de cantos de aves, y las islas que cambiaron para siempre nuestra forma de ver la vida.</p>
+      </div>
+      <div class="mt-10 grid auto-rows-[14rem] grid-cols-2 gap-4 sm:auto-rows-[16rem] lg:grid-cols-4" data-reveal-stagger>
+        {destinations.map((d, i) => <DestinationCard destination={d} class={i === 0 ? 'col-span-2 row-span-2' : ''} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="container-page py-20 sm:py-28">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="eyebrow">Ecuador continental</p>
+        <h2 class="mt-3 text-[var(--text-display)]">Tours de día desde Quito</h2>
+      </div>
+      <a href="/es/tours" class="btn btn-outline">Todos los tours de día →</a>
+    </div>
+    <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4" data-reveal-stagger>
+      {tours.slice(0, 4).map((t) => <TourCard tour={t} />)}
+    </div>
+  </section>
+
+  <section class="bg-sand-200/60 py-20 sm:py-28">
+    <div class="container-page">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="eyebrow">En sus palabras</p>
+          <h2 class="mt-3 text-[var(--text-display)]">Viajeros sobre Tour Guide Ecuador</h2>
+        </div>
+        <a href="/es/reviews" class="btn btn-outline">Ver todas las opiniones →</a>
+      </div>
+      <div class="mt-10 grid gap-6 md:grid-cols-3" data-reveal-stagger>
+        {reviews.map((r) => <ReviewCard review={r} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="relative isolate overflow-hidden bg-brand-600 py-20 text-white sm:py-24">
+    <div class="grain absolute inset-0 -z-10 opacity-30"></div>
+    <div class="container-page text-center">
+      <h2 class="mx-auto max-w-2xl text-[var(--text-display)] text-white">Planifiquemos el viaje del que no dejarás de hablar.</h2>
+      <p class="mx-auto mt-4 max-w-xl text-white">Cuéntanos tus fechas y tus sueños — diseñamos un itinerario y una cotización, sin compromiso.</p>
+      <div class="mt-8 flex flex-wrap justify-center gap-4">
+        <a href={SITE.whatsappHref} target="_blank" rel="noopener" class="btn btn-dark !px-7 !py-4 text-base">Escríbenos por WhatsApp</a>
+        <a href="/es/contact-us" class="btn !bg-white !text-brand-700 hover:!bg-sand-100 !px-7 !py-4 text-base">Enviar consulta</a>
+      </div>
+    </div>
+  </section>
+</SiteLayout>

@@ -1,0 +1,210 @@
+---
+import Breadcrumbs from './Breadcrumbs.astro';
+import CredibilityStrip from './CredibilityStrip.astro';
+import { SITE } from '../lib/site';
+import { months } from '../data/galapagos-calendar';
+import { getLangFromUrl, localizePath } from '../i18n/ui';
+
+const lang = getLangFromUrl(Astro.url);
+const es = lang === 'es';
+const L = (p: string) => localizePath(p, lang);
+const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+
+// Spanish month labels (display only — submitted value stays English for a consistent inbox).
+const MONTH_ES: Record<string, string> = {
+  January: 'Enero', February: 'Febrero', March: 'Marzo', April: 'Abril', May: 'Mayo', June: 'Junio',
+  July: 'Julio', August: 'Agosto', September: 'Septiembre', October: 'Octubre', November: 'Noviembre', December: 'Diciembre',
+};
+
+const interests = es
+  ? ['Crucero a Galápagos', 'Island hopping (isla en isla)', 'Buceo', 'Amazonía', 'Andes y tours de día', 'Luna de miel / ocasión especial']
+  : ['Galápagos cruise', 'Island hopping', 'Diving', 'Amazon rainforest', 'Andes & day tours', 'Honeymoon / special occasion'];
+const durations = es
+  ? ['4–5 días', '6–8 días', '1–2 semanas', '2+ semanas', 'Aún no lo sé']
+  : ['4–5 days', '6–8 days', '1–2 weeks', '2+ weeks', 'Not sure yet'];
+const travellerTypes = es
+  ? ['Solo/a', 'Pareja', 'Familia', 'Grupo de amigos']
+  : ['Solo', 'Couple', 'Family', 'Group of friends'];
+const budgets = es
+  ? ['Menos de $2,000', '$2,000–4,000', '$4,000–7,000', '$7,000+', 'No estoy seguro/a']
+  : ['Under $2,000', '$2,000–4,000', '$4,000–7,000', '$7,000+', 'Not sure'];
+
+const tr = {
+  crumb: es ? 'Planea tu viaje' : 'Plan my trip',
+  eyebrow: es ? 'A tu medida' : 'Tailor-made',
+  h1: es ? 'Planeemos tu viaje' : "Let's plan your trip",
+  lede: es
+    ? 'Unas pocas preguntas y te enviamos ideas, disponibilidad y un presupuesto sin compromiso — normalmente en un día hábil.'
+    : "A few quick questions and we'll come back with ideas, availability and a no-obligation quote — usually within one business day.",
+  stepTpl: es ? 'Paso {n} de {total}' : 'Step {n} of {total}',
+  stepInterests: es ? 'Tus intereses' : 'Your interests',
+  stepWhen: es ? 'Cuándo y cuánto' : 'When & how long',
+  stepWho: es ? 'Viajeros y presupuesto' : 'Travellers & budget',
+  stepDetails: es ? 'Tus datos' : 'Your details',
+  q1: es ? '¿Qué te gustaría vivir?' : 'What are you dreaming of?',
+  q1sub: es ? 'Elige todas las que quieras.' : 'Pick as many as you like.',
+  q2: es ? '¿Cuándo y por cuánto tiempo?' : 'When & how long?',
+  whenLabel: es ? '¿Más o menos cuándo?' : 'Roughly when?',
+  flexible: es ? 'Flexible / no estoy seguro/a' : 'Flexible / not sure',
+  tripLength: es ? 'Duración del viaje' : 'Trip length',
+  q3: es ? '¿Quién viaja y con qué presupuesto?' : "Who's travelling, and budget?",
+  howMany: es ? '¿Cuántos viajeros?' : 'How many travellers?',
+  howManyPh: es ? 'p. ej. 2 adultos' : 'e.g. 2 adults',
+  whoGoing: es ? '¿Quién va?' : "Who's going?",
+  budgetLabel: es ? 'Presupuesto por persona (solo orientativo)' : 'Budget per person (guide only)',
+  q4: es ? '¿A dónde enviamos tus ideas?' : 'Where shall we send your ideas?',
+  yourName: es ? 'Tu nombre' : 'Your name',
+  namePh: es ? 'Juana Viajera' : 'Jane Traveller',
+  email: es ? 'Correo electrónico' : 'Email',
+  anythingElse: es ? '¿Algo más? (opcional)' : 'Anything else? (optional)',
+  anythingPh: es ? 'Fauna de tu lista, necesidades de movilidad, fechas especiales…' : 'Bucket-list wildlife, mobility needs, special dates…',
+  back: es ? '← Atrás' : '← Back',
+  next: es ? 'Siguiente →' : 'Next →',
+  send: es ? 'Enviar mi plan' : 'Send my plan',
+  reassure1: es ? 'Sin depósito para consultar · respondemos en un día hábil · ' : 'No deposit to enquire · we reply within one business day · ',
+  reassureWa: es ? 'o escríbenos por WhatsApp' : 'or WhatsApp us',
+};
+---
+<section class="border-b border-sand-300 bg-sand-50">
+  <div class="container-page py-12 sm:py-16">
+    <Breadcrumbs items={[{ name: tr.crumb, url: L('/plan-my-trip') }]} />
+    <p class="eyebrow mt-6">{tr.eyebrow}</p>
+    <h1 class="mt-3 max-w-3xl font-display text-[clamp(2.2rem,5vw,3.6rem)] font-medium">{tr.h1}</h1>
+    <p class="mt-4 max-w-2xl text-lg text-ink-600">{tr.lede}</p>
+  </div>
+</section>
+
+<CredibilityStrip />
+
+<section class="container-page py-12">
+  <div class="mx-auto max-w-2xl rounded-2xl border border-sand-300 bg-white p-6 shadow-card sm:p-8">
+    <div id="wizard-progress" hidden class="mb-8" data-step-tpl={tr.stepTpl}>
+      <div class="flex items-center justify-between text-xs font-medium text-ink-500">
+        <span id="step-label"></span>
+        <span id="step-name"></span>
+      </div>
+      <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-sand-200">
+        <div id="progress-bar" class="h-full rounded-full bg-brand-500 transition-all duration-300" style="width:25%"></div>
+      </div>
+    </div>
+
+    <form id="plan-form" name="plan-my-trip" method="POST" data-netlify="true" netlify-honeypot="bot-field" action={L('/thank-you/')} data-astro-reload class="space-y-6">
+      <input type="hidden" name="form-name" value="plan-my-trip" />
+      <input type="hidden" name="lang" value={lang} />
+      <p class="hidden"><label>{es ? 'No rellenes esto' : "Don't fill this out"}: <input name="bot-field" /></label></p>
+
+      <fieldset data-step data-name={tr.stepInterests}>
+        <legend class="font-display text-xl">{tr.q1}</legend>
+        <p class="mt-1 text-sm text-ink-500">{tr.q1sub}</p>
+        <div class="mt-4 grid gap-3 sm:grid-cols-2">
+          {interests.map((it) => (
+            <label class="option-chip"><input type="checkbox" name="interests" value={it} class="accent-brand-500" />{it}</label>
+          ))}
+        </div>
+      </fieldset>
+
+      <fieldset data-step data-name={tr.stepWhen} hidden>
+        <legend class="font-display text-xl">{tr.q2}</legend>
+        <div class="mt-4 grid gap-5">
+          <label class="block">
+            <span class="mb-1.5 block text-sm font-medium text-ink-700">{tr.whenLabel}</span>
+            <select name="when" class="form-input">
+              <option value="">{tr.flexible}</option>
+              {months.map((m) => <option value={m.name}>{es ? (MONTH_ES[m.name] ?? m.name) : m.name}</option>)}
+            </select>
+          </label>
+          <div>
+            <span class="mb-2 block text-sm font-medium text-ink-700">{tr.tripLength}</span>
+            <div class="grid gap-3 sm:grid-cols-3">
+              {durations.map((d) => (
+                <label class="option-chip justify-center text-center"><input type="radio" name="duration" value={d} class="sr-only" />{d}</label>
+              ))}
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset data-step data-name={tr.stepWho} hidden>
+        <legend class="font-display text-xl">{tr.q3}</legend>
+        <div class="mt-4 space-y-5">
+          <div class="grid gap-5 sm:grid-cols-2">
+            <label class="block">
+              <span class="mb-1.5 block text-sm font-medium text-ink-700">{tr.howMany}</span>
+              <input name="travellers" inputmode="numeric" class="form-input" placeholder={tr.howManyPh} />
+            </label>
+            <div>
+              <span class="mb-2 block text-sm font-medium text-ink-700">{tr.whoGoing}</span>
+              <div class="grid grid-cols-2 gap-2">
+                {travellerTypes.map((t) => (
+                  <label class="option-chip justify-center !py-2 text-center text-sm"><input type="radio" name="travellerType" value={t} class="sr-only" />{t}</label>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div>
+            <span class="mb-2 block text-sm font-medium text-ink-700">{tr.budgetLabel}</span>
+            <div class="grid gap-2 sm:grid-cols-3">
+              {budgets.map((b) => (
+                <label class="option-chip justify-center !py-2 text-center text-sm"><input type="radio" name="budget" value={b} class="sr-only" />{b}</label>
+              ))}
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset data-step data-name={tr.stepDetails} hidden>
+        <legend class="font-display text-xl">{tr.q4}</legend>
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+          <label class="block"><span class="mb-1.5 block text-sm font-medium text-ink-700">{tr.yourName}</span><input required name="name" autocomplete="name" class="form-input" placeholder={tr.namePh} /></label>
+          <label class="block"><span class="mb-1.5 block text-sm font-medium text-ink-700">{tr.email}</span><input required type="email" name="email" autocomplete="email" class="form-input" placeholder="you@email.com" /></label>
+        </div>
+        <label class="mt-4 block"><span class="mb-1.5 block text-sm font-medium text-ink-700">{tr.anythingElse}</span><textarea name="message" rows="3" class="form-input" placeholder={tr.anythingPh}></textarea></label>
+        {turnstileKey && (<><div class="cf-turnstile mt-4" data-sitekey={turnstileKey}></div><script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer is:inline></script></>)}
+      </fieldset>
+
+      <div class="flex items-center justify-between gap-3 border-t border-sand-200 pt-5">
+        <button type="button" id="wizard-back" hidden class="btn btn-outline">{tr.back}</button>
+        <div class="ml-auto flex gap-3">
+          <button type="button" id="wizard-next" hidden class="btn btn-primary">{tr.next}</button>
+          <button type="submit" id="wizard-submit" class="btn btn-primary">{tr.send}</button>
+        </div>
+      </div>
+      <p class="text-center text-xs text-ink-500">{tr.reassure1}<a href={SITE.whatsappHref} class="font-medium text-brand-600 hover:underline">{tr.reassureWa}</a>.</p>
+    </form>
+  </div>
+</section>
+
+<script>
+  function initWizard() {
+    const form = document.getElementById('plan-form') as HTMLFormElement | null;
+    if (!form) return;
+    const steps = [...form.querySelectorAll<HTMLElement>('[data-step]')];
+    const progress = document.getElementById('wizard-progress');
+    const bar = document.getElementById('progress-bar');
+    const label = document.getElementById('step-label');
+    const stepName = document.getElementById('step-name');
+    const back = document.getElementById('wizard-back') as HTMLButtonElement;
+    const next = document.getElementById('wizard-next') as HTMLButtonElement;
+    const submit = document.getElementById('wizard-submit') as HTMLButtonElement;
+    if (!steps.length || !progress) return;
+    const tpl = progress.dataset.stepTpl || 'Step {n} of {total}';
+    progress.hidden = false;
+    let cur = 0;
+
+    function show(i: number) {
+      steps.forEach((s, idx) => (s.hidden = idx !== i));
+      const pct = ((i + 1) / steps.length) * 100;
+      if (bar) bar.style.width = `${pct}%`;
+      if (label) label.textContent = tpl.replace('{n}', String(i + 1)).replace('{total}', String(steps.length));
+      if (stepName) stepName.textContent = steps[i].dataset.name ?? '';
+      back.hidden = i === 0;
+      next.hidden = i === steps.length - 1;
+      submit.hidden = i !== steps.length - 1;
+      steps[i].querySelector<HTMLElement>('input,select,textarea')?.focus();
+    }
+    next.addEventListener('click', () => { if (cur < steps.length - 1) show(++cur); });
+    back.addEventListener('click', () => { if (cur > 0) show(--cur); });
+    show(0);
+  }
+  document.addEventListener('astro:page-load', initWizard);
+</script>

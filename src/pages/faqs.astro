@@ -1,0 +1,28 @@
+---
+import { getCollection } from 'astro:content';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import JsonLd from '../components/JsonLd.astro';
+import FaqList from '../components/FaqList.astro';
+
+const faqs = (await getCollection('faqs')).sort((a, b) => (a.data.order ?? 0) - (b.data.order ?? 0));
+const stripMd = (s: string) =>
+  s.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/[*_`#>]/g, '').replace(/\s+/g, ' ').trim();
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.data.question,
+    acceptedAnswer: { '@type': 'Answer', text: stripMd(f.body ?? '') },
+  })),
+};
+---
+<SiteLayout
+  localized
+  title="FAQ — Galápagos Cruises & Ecuador Tours | Tour Guide Ecuador"
+  description="Answers to common questions about Galápagos cruises and Ecuador tours — how many days you need, what's included, the best time to visit, booking, visas, fitness and safety."
+  canonicalPath="/faqs"
+>
+  <JsonLd slot="head" schema={faqSchema} />
+  <FaqList />
+</SiteLayout>

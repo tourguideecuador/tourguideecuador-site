@@ -1,0 +1,27 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import JsonLd from '../../components/JsonLd.astro';
+import FaqList from '../../components/FaqList.astro';
+import { localizePath } from '../../i18n/ui';
+import { faqsEs } from '../../data/faqs-es';
+
+const stripHtml = (s: string) => s.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqsEs.map((f) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: stripHtml(f.answerHtml) },
+  })),
+};
+---
+<SiteLayout
+  localized
+  title="Preguntas frecuentes — cruceros a Galápagos y tours por Ecuador | Tour Guide Ecuador"
+  description="Respuestas a las dudas más comunes sobre cruceros a Galápagos y tours por Ecuador: cuántos días necesitas, qué incluye, la mejor época para visitar, reservas, visas, condición física y seguridad."
+  canonicalPath={localizePath('/faqs', 'es')}
+>
+  <JsonLd slot="head" schema={faqSchema} />
+  <FaqList />
+</SiteLayout>

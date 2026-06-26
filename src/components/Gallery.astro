@@ -1,0 +1,29 @@
+---
+import { Image, getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+interface Props { images: ImageMetadata[]; group: string; alt: string; class?: string }
+const { images, group, alt, class: cls = '' } = Astro.props;
+const items = await Promise.all(
+  images.map(async (image, i) => {
+    const full = await getImage({ src: image, width: 1600, format: 'webp' });
+    return { image, full: full.src, label: `${alt} — photo ${i + 1}` };
+  }),
+);
+---
+<div class={`grid grid-cols-2 gap-3 sm:grid-cols-3 ${cls}`}>
+  {items.map(({ image, full, label }) => (
+    <button
+      type="button"
+      class="group relative aspect-[4/3] overflow-hidden rounded-xl ring-1 ring-inset ring-black/5 focus-visible:outline-offset-2"
+      data-lb data-lb-group={group} data-lb-full={full} data-lb-alt={label}
+      aria-label={`View ${label}`}
+    >
+      <Image src={image} alt={label} width={520} height={390} loading="lazy"
+        class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+      <span class="pointer-events-none absolute inset-0 bg-ink-950/0 transition group-hover:bg-ink-950/10"></span>
+      <span class="pointer-events-none absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/85 text-ink-800 opacity-0 transition group-hover:opacity-100">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+      </span>
+    </button>
+  ))}
+</div>

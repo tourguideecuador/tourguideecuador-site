@@ -1,0 +1,161 @@
+---
+import Breadcrumbs from './Breadcrumbs.astro';
+import { SITE } from '../lib/site';
+import { getCalendar } from '../data/galapagos-calendar';
+import { getLangFromUrl, localizePath } from '../i18n/ui';
+
+const lang = getLangFromUrl(Astro.url);
+const es = lang === 'es';
+const L = (p: string) => localizePath(p, lang);
+const canonical = L('/galapagos-wildlife-calendar');
+const { seasons, months, speciesTimeline } = getCalendar(lang);
+const warm = (s: string) => s === 'warm';
+
+const tr = {
+  crumbCruises: es ? 'Cruceros Galápagos' : 'Galápagos Cruises',
+  crumbWhen: es ? 'Cuándo ir' : 'When to go',
+  eyebrow: es ? 'Galápagos · Cuándo ir' : 'Galápagos · When to go',
+  h1: es ? '¿Cuál es la mejor época para visitar Galápagos?' : 'When is the best time to visit the Galápagos?',
+  lede: es
+    ? '¿Sinceramente? No hay mala época — la fauna prospera todo el año en el ecuador. El "mejor" mes depende de lo que más quieras ver. Aquí tienes el año de un vistazo, y luego mes a mes.'
+    : 'Honestly? There\'s no bad time — wildlife thrives year-round on the equator. The "best" month depends on what you most want to see. Here\'s the year at a glance, then month by month.',
+  warmTag: es ? 'Cálida' : 'Warm',
+  coolTag: es ? 'Fresca' : 'Cool',
+  mbmEyebrow: es ? 'Mes a mes' : 'Month by month',
+  mbmTitle: es ? 'El año en Galápagos' : 'The Galápagos year',
+  bestForLabel: es ? 'Ideal para' : 'Best for',
+  glanceEyebrow: es ? 'De un vistazo' : 'At a glance',
+  glanceTitle: es ? 'Fauna destacada por mes' : 'Wildlife highlights by month',
+  glanceLede: es
+    ? 'Cuándo ver a las especies protagonistas. Una guía general — la naturaleza marca su propio calendario.'
+    : 'When to catch the headline species. A general guide — nature keeps its own schedule.',
+  speciesCol: es ? 'Especie' : 'Species',
+  legendWarm: es ? 'Temporada cálida' : 'Warm season',
+  legendCool: es ? 'Temporada fresca' : 'Cool season',
+  ctaTitle: es ? '¿Sabes más o menos cuándo viajarías?' : "Know roughly when you'd travel?",
+  ctaLede: es
+    ? 'Dinos tu mes (o lo que más quieres ver) y te emparejamos con el crucero, la ruta y la cabina ideales.'
+    : 'Tell us your month (or what you most want to see) and we\'ll match you to the right cruise, route and cabin.',
+  ctaBrowse: es ? 'Ver cruceros a Galápagos' : 'Browse Galápagos cruises',
+  ctaWa: es ? 'Pregunta a un experto por WhatsApp' : 'Ask an expert on WhatsApp',
+};
+---
+<section class="border-b border-sand-300 bg-sand-50">
+  <div class="container-page py-12 sm:py-16">
+    <Breadcrumbs items={[{ name: tr.crumbCruises, url: L('/cruises') }, { name: tr.crumbWhen, url: canonical }]} />
+    <p class="eyebrow mt-6">{tr.eyebrow}</p>
+    <h1 class="mt-3 max-w-3xl font-display text-[clamp(2.2rem,5vw,3.8rem)] font-medium">{tr.h1}</h1>
+    <p class="mt-4 max-w-2xl text-lg text-ink-600">{tr.lede}</p>
+  </div>
+</section>
+
+<section class="container-page py-14 sm:py-20">
+  <div class="grid gap-6 lg:grid-cols-2" data-reveal-stagger>
+    <div class="rounded-2xl border border-brand-200 bg-brand-50/70 p-7">
+      <div class="flex items-center gap-3">
+        <span class="h-3 w-3 rounded-full bg-brand-500"></span>
+        <h2 class="font-display text-2xl">{seasons.warm.label} <span class="text-ink-400">·</span> <span class="text-brand-700">{seasons.warm.months}</span></h2>
+      </div>
+      <p class="mt-1 text-sm font-medium text-brand-700">{seasons.warm.temp}</p>
+      <p class="mt-3 text-ink-700">{seasons.warm.blurb}</p>
+      <ul class="mt-4 flex flex-wrap gap-2">
+        {seasons.warm.good.map((g) => <li class="rounded-full bg-white px-3 py-1 text-xs font-medium text-brand-700 ring-1 ring-brand-200">{g}</li>)}
+      </ul>
+    </div>
+    <div class="rounded-2xl border p-7" style="border-color:#a5d8df; background:rgba(236,254,255,0.6)">
+      <div class="flex items-center gap-3">
+        <span class="h-3 w-3 rounded-full" style="background:#0891b2"></span>
+        <h2 class="font-display text-2xl">{seasons.cool.label} <span class="text-ink-400">·</span> <span style="color:#0e7490">{seasons.cool.months}</span></h2>
+      </div>
+      <p class="mt-1 text-sm font-medium" style="color:#0e7490">{seasons.cool.temp}</p>
+      <p class="mt-3 text-ink-700">{seasons.cool.blurb}</p>
+      <ul class="mt-4 flex flex-wrap gap-2">
+        {seasons.cool.good.map((g) => <li class="rounded-full bg-white px-3 py-1 text-xs font-medium ring-1" style="color:#0e7490; --tw-ring-color:#a5d8df">{g}</li>)}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="bg-sand-200/50 py-14 sm:py-20">
+  <div class="container-page">
+    <div class="max-w-2xl">
+      <p class="eyebrow">{tr.mbmEyebrow}</p>
+      <h2 class="mt-3 text-[var(--text-display)]">{tr.mbmTitle}</h2>
+    </div>
+    <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-reveal-stagger>
+      {months.map((m) => (
+        <article class="flex flex-col rounded-2xl border border-sand-300 bg-white p-6 shadow-card">
+          <div class="flex items-center justify-between">
+            <h3 class="font-display text-2xl">{m.name}</h3>
+            <span class="rounded-full px-2.5 py-1 text-[0.66rem] font-semibold uppercase tracking-wide"
+                  style={warm(m.season) ? 'background:var(--color-brand-50);color:var(--color-brand-700)' : 'background:#ecfeff;color:#0e7490'}>
+              {warm(m.season) ? tr.warmTag : tr.coolTag}
+            </span>
+          </div>
+          <p class="mt-2 text-sm text-ink-500">{m.note}</p>
+          <ul class="mt-4 space-y-2">
+            {m.highlights.map((h) => (
+              <li class="flex gap-2.5 text-sm text-ink-700">
+                <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rotate-45 rounded-[1px]" style={warm(m.season) ? 'background:var(--color-brand-500)' : 'background:#0891b2'}></span>
+                {h}
+              </li>
+            ))}
+          </ul>
+          <p class="mt-4 border-t border-sand-200 pt-3 text-xs font-medium text-ink-500">{tr.bestForLabel} · <span class="text-ink-800">{m.bestFor}</span></p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class="container-page py-14 sm:py-20">
+  <div class="max-w-2xl">
+    <p class="eyebrow">{tr.glanceEyebrow}</p>
+    <h2 class="mt-3 text-[var(--text-display)]">{tr.glanceTitle}</h2>
+    <p class="mt-3 text-ink-600">{tr.glanceLede}</p>
+  </div>
+  <div class="mt-8 overflow-x-auto rounded-2xl border border-sand-300 bg-white shadow-card">
+    <table class="w-full min-w-[44rem] border-collapse text-sm">
+      <thead>
+        <tr class="border-b border-sand-300">
+          <th class="sticky left-0 z-10 bg-white px-4 py-3 text-left font-semibold text-ink-700">{tr.speciesCol}</th>
+          {months.map((m) => <th class="w-8 px-0 py-3 text-center text-xs font-semibold text-ink-500">{m.short[0]}</th>)}
+        </tr>
+      </thead>
+      <tbody>
+        {speciesTimeline.map((row) => (
+          <tr class="border-b border-sand-200 last:border-0">
+            <td class="sticky left-0 z-10 bg-white px-4 py-2.5">
+              <span class="block font-medium text-ink-900">{row.species}</span>
+              <span class="block text-xs text-ink-500">{row.note}</span>
+            </td>
+            {months.map((m, i) => {
+              const on = row.active.includes(i + 1);
+              const style = on ? (warm(m.season) ? 'background:var(--color-brand-400)' : 'background:#22b8cf') : '';
+              return (
+                <td class="px-0.5 py-2.5 text-center">
+                  <span class="mx-auto block h-5 w-5 rounded-md" style={on ? style : 'background:var(--color-sand-200)'} title={on ? `${row.species} — ${m.name}` : ''}></span>
+                </td>
+              );
+            })}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="mt-3 flex flex-wrap items-center gap-4 text-xs text-ink-500">
+    <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded" style="background:var(--color-brand-400)"></span> {tr.legendWarm}</span>
+    <span class="flex items-center gap-1.5"><span class="h-3 w-3 rounded" style="background:#22b8cf"></span> {tr.legendCool}</span>
+  </p>
+</section>
+
+<section class="border-t border-sand-300 bg-ink-900 py-16 text-sand-100 sm:py-20">
+  <div class="container-page text-center">
+    <h2 class="mx-auto max-w-2xl text-[var(--text-display)] text-white">{tr.ctaTitle}</h2>
+    <p class="mx-auto mt-4 max-w-xl text-ink-300">{tr.ctaLede}</p>
+    <div class="mt-8 flex flex-wrap justify-center gap-4">
+      <a href={L('/cruises')} class="btn btn-primary !px-7 !py-4 text-base">{tr.ctaBrowse}</a>
+      <a href={SITE.whatsappHref} target="_blank" rel="noopener" class="btn btn-ghost !border-white/40 !px-7 !py-4 text-base">{tr.ctaWa}</a>
+    </div>
+  </div>
+</section>

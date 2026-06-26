@@ -1,0 +1,35 @@
+---
+import { Image } from 'astro:assets';
+import { tourUrl, destinationName } from '../lib/content';
+import type { Tour } from '../lib/content';
+import { getLangFromUrl, useTranslations, localizePath } from '../i18n/ui';
+interface Props { tour: Tour; class?: string }
+const { tour, class: cls = '' } = Astro.props;
+const { title, heroImage, heroImageAlt, excerpt, durationLabel, priceFrom, destination } = tour.data;
+const dest = await destinationName(destination.id);
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const href = localizePath(tourUrl(tour.data.slug), lang);
+---
+<a href={href} class={`card card-link group flex flex-col ${cls}`}>
+  <div class="relative aspect-[4/3] overflow-hidden">
+    <Image src={heroImage} alt={heroImageAlt ?? title} width={640} height={480}
+      transition:name={`tour-img-${tour.data.slug}`}
+      class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+    <span class="glass absolute left-3 top-3 rounded-full px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-wide text-ink-900 shadow-sm">{dest}</span>
+  </div>
+  <div class="flex flex-1 flex-col p-5">
+    <h3 class="font-display text-xl leading-snug">{title}</h3>
+    <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-500">{excerpt}</p>
+    <div class="mt-4 flex items-center justify-between border-t border-sand-200 pt-3.5">
+      <span class="flex items-center gap-1.5 text-xs font-medium text-ink-500">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        {durationLabel ?? t('label.dayTour')}
+      </span>
+      <span class="text-sm font-semibold text-brand-600">
+        {priceFrom ? `${t('label.from')} $${priceFrom}` : t('cta.enquire')}
+        <span class="ml-1 inline-block transition-transform group-hover:translate-x-0.5">→</span>
+      </span>
+    </div>
+  </div>
+</a>

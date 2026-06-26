@@ -1,0 +1,143 @@
+---
+import Breadcrumbs from './Breadcrumbs.astro';
+import TourCard from './TourCard.astro';
+import { getTours, getTourTypes, getDestinations } from '../lib/content';
+import { getLangFromUrl, localizePath } from '../i18n/ui';
+
+const lang = getLangFromUrl(Astro.url);
+const es = lang === 'es';
+const L = (p: string) => localizePath(p, lang);
+const tours = await getTours();
+const types = await getTourTypes();
+const destinations = await getDestinations();
+const usedTypeIds = new Set(tours.map((t) => t.data.type.id));
+const filters = types.filter((t) => usedTypeIds.has(t.id));
+const usedDestIds = new Set(tours.map((t) => t.data.destination.id));
+const destOptions = destinations.filter((d) => usedDestIds.has(d.id));
+const durKey = (l?: string) => {
+  const s = (l ?? '').toLowerCase();
+  if (s.includes('multi')) return 'multi';
+  if (s.includes('full')) return 'full';
+  if (s.includes('half') || s.includes('hour')) return 'half';
+  return 'other';
+};
+const tr = {
+  crumb: es ? 'Tours en Ecuador' : 'Ecuador Tours',
+  h1: es ? 'Tours de día en Ecuador' : 'Ecuador day tours',
+  intro: es
+    ? 'Excursiones de día diseñadas y guiadas por locales desde Quito — volcanes, mercados, bosque nublado y la mitad del mundo. Compartidas o privadas, a tu medida.'
+    : 'Hand-crafted, locally guided day trips from Quito — volcanoes, markets, cloudforest and the Equator. Shared or private, tailored to you.',
+  all: es ? 'Todos' : 'All',
+  destination: es ? 'Destino' : 'Destination',
+  allDest: es ? 'Todos los destinos' : 'All destinations',
+  length: es ? 'Duración' : 'Length',
+  anyLength: es ? 'Cualquiera' : 'Any length',
+  half: es ? 'Medio día' : 'Half day',
+  full: es ? 'Día completo' : 'Full day',
+  multi: es ? 'Varios días' : 'Multi-day',
+  sort: es ? 'Ordenar' : 'Sort',
+  featured: es ? 'Destacados' : 'Featured',
+  az: es ? 'Nombre A–Z' : 'Name A–Z',
+  za: es ? 'Nombre Z–A' : 'Name Z–A',
+  noResults: es ? 'Ningún tour coincide — ' : 'No tours match those filters — ',
+  tellUs: es ? 'cuéntanos qué buscas' : "tell us what you're after",
+  word: es ? 'tours' : 'tours',
+};
+---
+<section class="border-b border-sand-300 bg-sand-50">
+  <div class="container-page py-12 sm:py-16">
+    <Breadcrumbs items={[{ name: tr.crumb, url: L('/tours') }]} />
+    <h1 class="mt-5 max-w-3xl font-display text-[clamp(2.2rem,5vw,3.6rem)] font-medium">{tr.h1}</h1>
+    <p class="mt-4 max-w-2xl text-lg text-ink-600">{tr.intro}</p>
+  </div>
+</section>
+
+<section class="container-page py-10">
+  <div class="flex flex-wrap gap-2" role="group" aria-label="Filter tours by type">
+    <button type="button" data-type-filter="all" class="filter-chip is-active">{tr.all}</button>
+    {filters.map((t) => <button type="button" data-type-filter={t.id} class="filter-chip">{t.data.title}</button>)}
+  </div>
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <label class="text-sm text-ink-600">{tr.destination}
+      <select id="filter-dest" class="form-input ml-2 inline-block w-auto !py-1.5 text-sm">
+        <option value="all">{tr.allDest}</option>
+        {destOptions.map((d) => <option value={d.id}>{d.data.title}</option>)}
+      </select>
+    </label>
+    <label class="text-sm text-ink-600">{tr.length}
+      <select id="filter-dur" class="form-input ml-2 inline-block w-auto !py-1.5 text-sm">
+        <option value="all">{tr.anyLength}</option>
+        <option value="half">{tr.half}</option>
+        <option value="full">{tr.full}</option>
+        <option value="multi">{tr.multi}</option>
+      </select>
+    </label>
+    <label class="ml-auto text-sm text-ink-600">{tr.sort}
+      <select id="sort-tours" class="form-input ml-2 inline-block w-auto !py-1.5 text-sm">
+        <option value="featured">{tr.featured}</option>
+        <option value="az">{tr.az}</option>
+        <option value="za">{tr.za}</option>
+      </select>
+    </label>
+    <span id="result-count" class="text-sm font-medium text-ink-500"></span>
+  </div>
+
+  <div id="tour-grid" class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    {tours.map((t, i) => (
+      <div data-card data-order={i}
+           data-types={[t.data.type.id, ...(t.data.secondaryTypes?.map((s) => s.id) ?? [])].join(' ')}
+           data-dest={t.data.destination.id} data-dur={durKey(t.data.durationLabel)} data-name={t.data.title}>
+        <TourCard tour={t} />
+      </div>
+    ))}
+  </div>
+  <p id="no-results" hidden class="py-12 text-center text-ink-500" data-word={tr.word}>{tr.noResults}<a class="text-brand-600 hover:underline" href={L('/plan-my-trip')}>{tr.tellUs}</a>.</p>
+</section>
+
+<style>
+  .filter-chip { border-radius: 999px; border: 1.5px solid var(--color-sand-300); padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 600; color: var(--color-ink-600); transition: all 0.15s ease; cursor: pointer; }
+  .filter-chip:hover { border-color: var(--color-brand-400); color: var(--color-brand-600); }
+  .filter-chip.is-active { background: var(--color-ink-900); border-color: var(--color-ink-900); color: var(--color-sand-100); }
+</style>
+<script>
+  function initTourFilter() {
+    const grid = document.getElementById('tour-grid');
+    if (!grid) return;
+    const chips = [...document.querySelectorAll<HTMLButtonElement>('[data-type-filter]')];
+    const cards = [...grid.querySelectorAll<HTMLElement>('[data-card]')];
+    const destSel = document.getElementById('filter-dest') as HTMLSelectElement;
+    const durSel = document.getElementById('filter-dur') as HTMLSelectElement;
+    const sortSel = document.getElementById('sort-tours') as HTMLSelectElement;
+    const empty = document.getElementById('no-results');
+    const count = document.getElementById('result-count');
+    const word = empty?.dataset.word ?? 'tours';
+    let type = 'all';
+    function apply() {
+      let shown = 0;
+      cards.forEach((c) => {
+        const okType = type === 'all' || (c.dataset.types ?? '').split(' ').includes(type);
+        const okDest = destSel.value === 'all' || c.dataset.dest === destSel.value;
+        const okDur = durSel.value === 'all' || c.dataset.dur === durSel.value;
+        const match = okType && okDest && okDur;
+        c.hidden = !match;
+        if (match) shown++;
+      });
+      const sorted = [...cards].sort((a, b) => {
+        if (sortSel.value === 'az') return (a.dataset.name ?? '').localeCompare(b.dataset.name ?? '');
+        if (sortSel.value === 'za') return (b.dataset.name ?? '').localeCompare(a.dataset.name ?? '');
+        return Number(a.dataset.order) - Number(b.dataset.order);
+      });
+      sorted.forEach((c) => grid!.appendChild(c));
+      if (empty) empty.hidden = shown !== 0;
+      if (count) count.textContent = `${shown} ${word}`;
+    }
+    chips.forEach((chip) => chip.addEventListener('click', () => {
+      type = chip.dataset.typeFilter!;
+      chips.forEach((c) => c.classList.toggle('is-active', c === chip));
+      apply();
+    }));
+    [destSel, durSel, sortSel].forEach((el) => el?.addEventListener('change', apply));
+    apply();
+  }
+  document.addEventListener('astro:page-load', initTourFilter);
+</script>

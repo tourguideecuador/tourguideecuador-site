@@ -1,0 +1,102 @@
+---
+import { getImage } from 'astro:assets';
+import Breadcrumbs from './Breadcrumbs.astro';
+import { getCruises, cruiseUrl } from '../lib/content';
+import { getLangFromUrl, localizePath } from '../i18n/ui';
+
+const lang = getLangFromUrl(Astro.url);
+const es = lang === 'es';
+const L = (p: string) => localizePath(p, lang);
+const cruises = await getCruises();
+const data = await Promise.all(
+  cruises.map(async (c) => {
+    const img = await getImage({ src: c.data.heroImage, width: 480, height: 320, format: 'webp' });
+    return { slug: c.data.slug, name: c.data.title, cls: c.data.vesselClass ?? '', type: c.data.vesselType ?? '',
+      cabins: c.data.cabins ?? null, guests: c.data.capacity ?? null, href: L(cruiseUrl(c.data.slug)), img: img.src };
+  }),
+);
+const tr = {
+  crumb: es ? 'Cruceros Galápagos' : 'Galápagos Cruises',
+  compare: es ? 'Comparar' : 'Compare',
+  h1: es ? 'Compara cruceros a Galápagos' : 'Compare Galápagos cruises',
+  intro1: es ? 'Marca 2–4 embarcaciones para verlas lado a lado. ¿No sabes cuál? ' : 'Tick 2–4 vessels to see them side by side. Not sure? ',
+  whenToGo: es ? 'Cuándo ir →' : 'When to go →',
+  prompt: es ? 'Selecciona cruceros abajo para comparar (hasta 4).' : 'Select cruises below to compare (up to 4).',
+  view: es ? 'Ver crucero' : 'View cruise',
+};
+const labels = { class: es ? 'Categoría' : 'Class', vessel: es ? 'Embarcación' : 'Vessel', cabins: es ? 'Cabinas' : 'Cabins', guests: es ? 'Huéspedes' : 'Guests', view: tr.view, remove: es ? 'Quitar' : 'Remove' };
+---
+<section class="border-b border-sand-300 bg-ink-900 text-sand-100">
+  <div class="container-page py-12 sm:py-16">
+    <div class="[&_*]:!text-sand-200/70"><Breadcrumbs items={[{ name: tr.crumb, url: L('/cruises') }, { name: tr.compare, url: L('/cruises/compare') }]} /></div>
+    <h1 class="mt-5 max-w-3xl font-display text-[clamp(2.2rem,5vw,3.6rem)] font-medium text-white">{tr.h1}</h1>
+    <p class="mt-4 max-w-2xl text-lg text-ink-300">{tr.intro1}<a class="font-medium text-brand-300 hover:underline" href={L('/galapagos-wildlife-calendar')}>{tr.whenToGo}</a></p>
+  </div>
+</section>
+
+<section id="compare-panel" class="sticky top-[var(--header-h,4.75rem)] z-30 border-b border-sand-300 bg-sand-50/95 backdrop-blur">
+  <div class="container-page py-4">
+    <p id="compare-empty" class="text-sm text-ink-500">{tr.prompt}</p>
+    <div id="compare-grid" hidden class="overflow-x-auto"></div>
+  </div>
+</section>
+
+<section class="container-page py-10">
+  <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    {data.map((c) => (
+      <label class="cruise-pick group cursor-pointer overflow-hidden rounded-2xl border border-sand-300 bg-white shadow-card transition has-[:checked]:ring-2 has-[:checked]:ring-brand-500" data-slug={c.slug}>
+        <div class="relative aspect-[3/2] overflow-hidden">
+          <img src={c.img} alt={c.name} width="480" height="320" loading="lazy" class="h-full w-full object-cover" />
+          <span class="glass absolute left-3 top-3 rounded-full px-2.5 py-1 text-[0.66rem] font-semibold uppercase tracking-wide text-ink-900">{c.cls}</span>
+          <span class="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-white/30 text-white backdrop-blur transition group-has-[:checked]:border-brand-500 group-has-[:checked]:bg-brand-500">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="opacity-0 transition group-has-[:checked]:opacity-100"><path d="M5 12l5 5L20 7"/></svg>
+          </span>
+          <input type="checkbox" class="sr-only" name="compare" value={c.slug} aria-label={`${tr.compare} ${c.name}`} />
+        </div>
+        <div class="p-4"><h3 class="font-display text-lg">{c.name}</h3><p class="text-xs text-ink-500">{c.type}</p></div>
+      </label>
+    ))}
+  </div>
+</section>
+
+<script type="application/json" id="cruise-data" set:html={JSON.stringify(data)} is:inline></script>
+<script type="application/json" id="compare-labels" set:html={JSON.stringify(labels)} is:inline></script>
+
+<script>
+  function initCompare() {
+    const dataEl = document.getElementById('cruise-data');
+    const labelsEl = document.getElementById('compare-labels');
+    if (!dataEl || !labelsEl) return;
+    const CRUISES: any[] = JSON.parse(dataEl.textContent || '[]');
+    const T: any = JSON.parse(labelsEl.textContent || '{}');
+    const byId = Object.fromEntries(CRUISES.map((c) => [c.slug, c]));
+    const grid = document.getElementById('compare-grid');
+    const empty = document.getElementById('compare-empty');
+    const boxes = [...document.querySelectorAll<HTMLInputElement>('input[name="compare"]')];
+    const MAX = 4;
+    const selected = new Set<string>();
+    const cell = (label: string, val: string) =>
+      `<div class="flex justify-between gap-3 border-b border-sand-200 py-1.5 text-sm last:border-0"><dt class="text-ink-500">${label}</dt><dd class="text-right font-medium text-ink-900">${val}</dd></div>`;
+    function render() {
+      if (!grid || !empty) return;
+      boxes.forEach((b) => { b.disabled = !selected.has(b.value) && selected.size >= MAX; });
+      if (selected.size === 0) { grid.hidden = true; empty.hidden = false; return; }
+      empty.hidden = true; grid.hidden = false;
+      const cols = [...selected].map((slug) => {
+        const c = byId[slug];
+        return `<div class="w-60 shrink-0 rounded-xl border border-sand-300 bg-white p-3">
+          <div class="flex items-start justify-between gap-2"><img src="${c.img}" alt="" class="h-14 w-20 rounded-md object-cover" />
+          <button data-remove="${slug}" aria-label="${T.remove} ${c.name}" class="text-ink-400 hover:text-brand-600">✕</button></div>
+          <h3 class="mt-2 font-display text-base leading-tight">${c.name}</h3>
+          <dl class="mt-2">${cell(T.class, c.cls || '—')}${cell(T.vessel, c.type || '—')}${cell(T.cabins, c.cabins ?? '—')}${cell(T.guests, c.guests ?? '—')}</dl>
+          <a href="${c.href}" class="btn btn-primary mt-3 w-full !py-2 text-xs">${T.view}</a></div>`;
+      }).join('');
+      grid.innerHTML = `<div class="flex gap-3 pb-1">${cols}</div>`;
+      grid.querySelectorAll<HTMLButtonElement>('[data-remove]').forEach((btn) =>
+        btn.addEventListener('click', () => { const s = btn.dataset.remove!; selected.delete(s); const b = boxes.find((x) => x.value === s); if (b) b.checked = false; render(); }));
+    }
+    boxes.forEach((box) => box.addEventListener('change', () => { if (box.checked) selected.add(box.value); else selected.delete(box.value); render(); }));
+    render();
+  }
+  document.addEventListener('astro:page-load', initCompare);
+</script>

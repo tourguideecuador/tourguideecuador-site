@@ -1,0 +1,64 @@
+---
+// Brochure lead magnet — email-gated "free Galápagos cruise guide" (Netlify form
+// → info@). The PDF itself is a client deliverable; see HANDOVER.md (drop it at
+// /downloads/ and the thank-you can link it, or email via an autoresponder).
+import { getLangFromUrl, localizePath } from '../i18n/ui';
+interface Props { class?: string }
+const { class: cls = '' } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const es = lang === 'es';
+const inside = es
+  ? ['Itinerarios de muestra de 4–8 días', 'Cuándo ir, mes a mes', 'Cómo elegir tu barco', 'Qué llevar y qué esperar']
+  : ['Sample 4–8 day itineraries', 'When to go, month by month', 'How to choose your boat', 'What to pack & expect'];
+const tr = {
+  hint: es ? 'No rellenes esto' : "Don't fill this out",
+  eyebrow: es ? 'Guía gratis · PDF' : 'Free guide · PDF',
+  title: es ? 'La guía de cruceros por Galápagos' : 'The Galápagos cruise guide',
+  lede: es
+    ? 'Todo lo que necesitas para planear el viaje de tu vida, en un solo PDF hermoso. Déjanos tu correo y te lo enviamos.'
+    : "Everything you need to plan the trip of a lifetime — in one beautiful PDF. Pop in your email and we'll send it over.",
+  name: es ? 'Tu nombre' : 'Your name',
+  namePh: es ? 'Juana Viajera' : 'Jane Traveller',
+  email: es ? 'Correo electrónico' : 'Email',
+  send: es ? 'Envíenme la guía' : 'Send me the guide',
+  note: es ? 'También te mantendremos al tanto con alguna idea de viaje. Cancela cuando quieras.' : "We'll also keep you posted with the odd trip idea. Unsubscribe anytime.",
+  aria: es ? 'Guía gratis de cruceros por Galápagos' : 'Free Galápagos cruise guide',
+  requested: es ? 'Guía de cruceros por Galápagos' : 'Galápagos cruise guide',
+};
+---
+<section class={`bg-ink-900 text-sand-100 ${cls}`} aria-label={tr.aria}>
+  <div class="container-page grid gap-10 py-14 sm:py-16 lg:grid-cols-2 lg:items-center">
+    <div>
+      <p class="eyebrow text-brand-300">{tr.eyebrow}</p>
+      <h2 class="mt-3 text-[var(--text-display)] text-white">{tr.title}</h2>
+      <p class="mt-4 max-w-md text-ink-300">{tr.lede}</p>
+      <ul class="mt-5 grid max-w-md grid-cols-1 gap-2 sm:grid-cols-2">
+        {inside.map((i) => (
+          <li class="flex items-center gap-2 text-sm text-ink-200">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="shrink-0 text-brand-400"><path d="M5 12l5 5L20 7"/></svg>{i}
+          </li>
+        ))}
+      </ul>
+    </div>
+    <div class="rounded-2xl bg-white/5 p-6 ring-1 ring-white/10 sm:p-8">
+      <form name="brochure-request" method="POST" data-netlify="true" netlify-honeypot="bot-field" action={`${localizePath('/thank-you/', lang)}?guide=1`} data-astro-reload>
+        <input type="hidden" name="form-name" value="brochure-request" />
+        <input type="hidden" name="requested" value={tr.requested} />
+        <input type="hidden" name="lang" value={lang} />
+        <p class="hidden"><label>{tr.hint}: <input name="bot-field" /></label></p>
+        <label class="block">
+          <span class="text-sm font-medium text-sand-100">{tr.name}</span>
+          <input required name="name" autocomplete="name" placeholder={tr.namePh}
+            class="mt-1.5 w-full rounded-lg border border-white/15 bg-white/10 px-3 py-2.5 text-sm text-white placeholder:text-ink-400 focus:border-brand-400 focus:outline-none" />
+        </label>
+        <label class="mt-3 block">
+          <span class="text-sm font-medium text-sand-100">{tr.email}</span>
+          <input required type="email" name="email" autocomplete="email" placeholder="you@email.com"
+            class="mt-1.5 w-full rounded-lg border border-white/15 bg-white/10 px-3 py-2.5 text-sm text-white placeholder:text-ink-400 focus:border-brand-400 focus:outline-none" />
+        </label>
+        <button type="submit" class="btn btn-primary mt-4 w-full">{tr.send}</button>
+        <p class="mt-2 text-center text-xs text-ink-300">{tr.note}</p>
+      </form>
+    </div>
+  </div>
+</section>

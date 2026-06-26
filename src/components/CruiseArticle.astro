@@ -1,0 +1,101 @@
+---
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import Breadcrumbs from './Breadcrumbs.astro';
+import InquiryForm from './InquiryForm.astro';
+import Gallery from './Gallery.astro';
+import CredibilityStrip from './CredibilityStrip.astro';
+import UntranslatedNotice from './UntranslatedNotice.astro';
+import JsonLd from './JsonLd.astro';
+import { SITE } from '../lib/site';
+import { touristTripSchema } from '../lib/schema';
+import { getLangFromUrl } from '../i18n/ui';
+import type { Cruise } from '../lib/content';
+interface Props { cruise: Cruise }
+const { cruise } = Astro.props;
+const d = cruise.data;
+const { Content } = await render(cruise);
+const overviewLabel = getLangFromUrl(Astro.url) === 'es' ? 'Resumen del crucero' : 'Cruise overview';
+const url = `/${d.slug}`;
+const specs = [
+  d.vesselClass && { label: 'Class', value: d.vesselClass },
+  d.vesselType && { label: 'Vessel', value: d.vesselType },
+  d.cabins && { label: 'Cabins', value: String(d.cabins) },
+  d.capacity && { label: 'Guests', value: String(d.capacity) },
+  ...(d.specs ?? []),
+].filter(Boolean) as { label: string; value: string }[];
+---
+<JsonLd slot="head" schema={touristTripSchema({ name: d.title, description: d.metaDescription, url: `${SITE.url}${url}` })} />
+
+<!-- Immersive hero -->
+<section class="relative isolate flex min-h-[78svh] items-end overflow-hidden bg-ink-950">
+  <Image src={d.heroImage} alt={d.heroImageAlt ?? d.title} widths={[768, 1280, 1920, 2400]} sizes="100vw" transition:name={`cruise-img-${d.slug}`} class="absolute inset-0 h-full w-full object-cover opacity-80" loading="eager" fetchpriority="high" />
+  <div class="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/35 to-ink-950/45"></div>
+  <div class="container-page relative w-full pb-14 pt-32 text-white">
+    <div class="[&_*]:!text-white/80"><Breadcrumbs items={[{ name: 'Galápagos Cruises', url: '/cruises' }, { name: d.title, url }]} /></div>
+    <div class="mt-6 flex flex-wrap items-center gap-3">
+      {d.vesselClass && <span class="rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] backdrop-blur">{d.vesselClass} class</span>}
+      <span class="text-sm uppercase tracking-[0.16em] text-white/70">{d.vesselType ?? 'Galápagos cruise'}</span>
+    </div>
+    <h1 class="mt-3 font-display text-[clamp(2.6rem,6vw,5rem)] font-medium leading-[0.98] text-white">{d.title}</h1>
+    <p class="mt-4 max-w-xl text-lg text-white/85">{d.excerpt}</p>
+    <div class="mt-8 flex flex-wrap gap-4">
+      <a href="#inquire" class="btn btn-primary !px-7 !py-4 text-base">Request a quote</a>
+      <a href={SITE.whatsappHref} target="_blank" rel="noopener" class="btn btn-ghost !px-7 !py-4 text-base">Ask on WhatsApp</a>
+    </div>
+  </div>
+</section>
+
+<UntranslatedNotice />
+
+<!-- Specs strip -->
+{specs.length > 0 && (
+  <section class="border-b border-sand-300 bg-sand-50">
+    <dl class="container-page grid grid-cols-2 gap-px py-2 sm:grid-cols-4">
+      {specs.slice(0, 4).map((s) => (
+        <div class="px-2 py-4 text-center">
+          <dt class="text-xs uppercase tracking-[0.14em] text-ink-500">{s.label}</dt>
+          <dd class="mt-1 font-display text-xl text-ink-900">{s.value}</dd>
+        </div>
+      ))}
+    </dl>
+  </section>
+)}
+
+<!-- Body + sidebar -->
+<div class="container-page grid gap-12 py-16 lg:grid-cols-[1fr_22rem]">
+  <article class="prose-tge max-w-2xl"><h2 class="sr-only">{overviewLabel}</h2><Content /></article>
+  <aside class="lg:sticky lg:top-[calc(var(--header-h,4.75rem)+1.5rem)] lg:self-start">
+    <div class="rounded-2xl border border-sand-300 bg-white p-6 shadow-card">
+      <p class="eyebrow">Tailor-made</p>
+      <h2 class="mt-2 font-display text-xl">Enquire about the {d.title}</h2>
+      <p class="mt-2 text-sm text-ink-600">Cruises are quoted to your dates, cabin and group. Tell us what you're after.</p>
+      <a href="#inquire" class="btn btn-primary mt-4 w-full">Request a quote</a>
+      <p class="mt-3 text-center text-xs text-ink-500">{SITE.nytQuote}</p>
+    </div>
+  </aside>
+</div>
+
+{d.gallery && d.gallery.length > 0 && (
+  <section class="container-page pb-4">
+    <h2 class="font-display text-2xl sm:text-3xl">Aboard the {d.title}</h2>
+    <Gallery images={d.gallery} group={`cruise-${d.slug}`} alt={d.title} class="mt-6" />
+  </section>
+)}
+
+<CredibilityStrip />
+
+<!-- Inquiry -->
+<section id="inquire" class="scroll-mt-24 border-t border-sand-300 bg-sand-200/50 py-16">
+  <div class="container-page grid gap-10 lg:grid-cols-2 lg:items-start">
+    <div>
+      <p class="eyebrow">Plan your voyage</p>
+      <h2 class="mt-3 text-[var(--text-display)]">Request a quote for the {d.title}</h2>
+      <p class="mt-4 max-w-md text-ink-600">No instant-book on cruises — every Galápagos voyage is tailored. Send your details and we'll come back with availability, cabins and the best price.</p>
+      <p class="mt-6 text-sm text-ink-500">Prefer to chat? <a class="font-medium text-brand-600 hover:underline" href={SITE.whatsappHref}>WhatsApp us</a> or email <a class="font-medium text-brand-600 hover:underline" href={`mailto:${SITE.email}`}>{SITE.email}</a>.</p>
+    </div>
+    <div class="rounded-2xl border border-sand-300 bg-white p-6 shadow-card sm:p-8">
+      <InquiryForm subject={`the ${d.title} (Galápagos cruise)`} />
+    </div>
+  </div>
+</section>

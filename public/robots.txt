@@ -1,0 +1,6 @@
+# Tour Guide Ecuador — permissive (English-only v1, no hreflang).
+User-agent: *
+Allow: /
+Disallow: /keystatic
+
+Sitemap: https://tourguideecuador.com/sitemap-index.xml

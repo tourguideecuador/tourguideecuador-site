@@ -1,0 +1,26 @@
+---
+// Compact email capture (Netlify form → info@). Used in the footer.
+import { getLangFromUrl, localizePath } from '../i18n/ui';
+interface Props { class?: string }
+const { class: cls = '' } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const es = lang === 'es';
+const tr = {
+  hint: es ? "No rellenes esto" : "Don't fill this out",
+  label: es ? 'Ideas de viaje en tu correo' : 'Travel ideas in your inbox',
+  join: es ? 'Unirme' : 'Join',
+  note: es ? 'Ideas de viaje y tips de Galápagos de vez en cuando. Sin spam, cancela cuando quieras.' : 'Occasional trip ideas & Galápagos tips. No spam, unsubscribe anytime.',
+};
+---
+<form name="newsletter" method="POST" data-netlify="true" netlify-honeypot="bot-field" action={localizePath('/thank-you/', lang)} data-astro-reload class={cls}>
+  <input type="hidden" name="form-name" value="newsletter" />
+  <input type="hidden" name="lang" value={lang} />
+  <p class="hidden"><label>{tr.hint}: <input name="bot-field" /></label></p>
+  <label for="nl-email" class="text-xs font-bold uppercase tracking-[0.18em] text-ink-300">{tr.label}</label>
+  <div class="mt-3 flex gap-2">
+    <input id="nl-email" required type="email" name="email" autocomplete="email" placeholder="you@email.com"
+      class="w-full rounded-lg border border-white/15 bg-white/10 px-3 py-2.5 text-sm text-white placeholder:text-ink-400 focus:border-brand-400 focus:outline-none" />
+    <button type="submit" class="btn btn-primary !px-4 !py-2.5 text-sm">{tr.join}</button>
+  </div>
+  <p class="mt-2 text-xs text-ink-300">{tr.note}</p>
+</form>

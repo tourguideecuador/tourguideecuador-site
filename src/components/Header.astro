@@ -1,0 +1,124 @@
+---
+import Logo from './Logo.astro';
+import { getLangFromUrl, useTranslations, localizePath, unlocalizePath, type UIKey } from '../i18n/ui';
+interface Props { overlay?: boolean; langSwitch?: boolean }
+const { overlay = false, langSwitch = false } = Astro.props;
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const path = Astro.url.pathname;
+const enPath = unlocalizePath(path);
+const isActive = (href: string) => href !== '/' && enPath.startsWith(href);
+
+const NAV: { key: UIKey; href: string }[] = [
+  { key: 'nav.cruises', href: '/cruises' },
+  { key: 'nav.tours', href: '/tours' },
+  { key: 'nav.destinations', href: '/destinations' },
+  { key: 'nav.whenToGo', href: '/galapagos-wildlife-calendar' },
+  { key: 'nav.reviews', href: '/reviews' },
+  { key: 'nav.about', href: '/about-us' },
+];
+// language switcher points at the same page in the other locale
+const switchHref = lang === 'en' ? localizePath(enPath, 'es') : enPath;
+---
+<header
+  data-overlay={overlay ? '' : null}
+  class:list={[
+    'site-header fixed inset-x-0 top-0 z-50 transition-colors duration-300',
+    overlay ? 'is-overlay text-white' : 'is-solid glass text-ink-900 border-b border-sand-300',
+  ]}
+>
+  <div class="container-page flex h-[var(--header-h,4.75rem)] items-center justify-between gap-4">
+    <a href={localizePath('/', lang)} class="shrink-0 rounded-md focus-visible:outline-offset-4">
+      <Logo class="logo-lockup" />
+    </a>
+
+    <nav aria-label="Primary" class="hidden items-center gap-7 lg:flex">
+      {NAV.map((item) => (
+        <a
+          href={localizePath(item.href, lang)}
+          class:list={['nav-link text-[0.95rem] font-medium transition-opacity hover:opacity-70', isActive(item.href) && 'is-current']}
+          aria-current={isActive(item.href) ? 'page' : undefined}
+        >{t(item.key)}</a>
+      ))}
+    </nav>
+
+    <div class="flex items-center gap-3">
+      {langSwitch && <a href={switchHref} class="hidden text-sm font-semibold uppercase tracking-wide transition-opacity hover:opacity-70 sm:inline-flex" hreflang={lang === 'en' ? 'es' : 'en'} aria-label={`Switch to ${t('lang.switch')}`}>{t('lang.switch')}</a>}
+      <a href={localizePath('/plan-my-trip', lang)} class="hidden btn btn-primary !px-5 !py-2.5 sm:inline-flex">
+        {t('cta.planTrip')}
+      </a>
+      <button type="button" id="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu"
+        class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-current/25 lg:hidden">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path id="menu-icon" d="M3 6h18M3 12h18M3 18h18" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div id="mobile-menu" hidden class="lg:hidden border-t border-sand-300 bg-sand-100 text-ink-900">
+    <nav aria-label="Mobile" class="container-page flex flex-col py-3">
+      {NAV.map((item) => (
+        <a href={localizePath(item.href, lang)} class="border-b border-sand-200 py-3.5 text-lg font-medium">{t(item.key)}</a>
+      ))}
+      {langSwitch && <a href={switchHref} class="border-b border-sand-200 py-3.5 text-lg font-medium" hreflang={lang === 'en' ? 'es' : 'en'}>{t('lang.switch')}</a>}
+      <a href={localizePath('/plan-my-trip', lang)} class="btn btn-primary mt-4">{t('cta.planTrip')}</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header.is-overlay { background: transparent; }
+  /* When overlay header has scrolled, JS adds .scrolled → frosted glass */
+  .site-header.is-overlay.scrolled {
+    background: color-mix(in oklab, white 60%, transparent);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    backdrop-filter: blur(16px) saturate(150%);
+    color: var(--color-ink-900);
+    border-bottom: 1px solid var(--color-sand-300);
+  }
+  .nav-link.is-current { color: var(--color-brand-700); } /* AA on sand header */
+  .site-header.is-overlay:not(.scrolled) .nav-link.is-current { color: #fff; text-decoration: underline; text-underline-offset: 6px; }
+</style>
+
+<script>
+  // Re-bind on first load and after every View Transition navigation.
+  let scrollBound = false, escBound = false;
+  function syncOverlay() {
+    const h = document.querySelector('.site-header');
+    if (h?.classList.contains('is-overlay')) h.classList.toggle('scrolled', window.scrollY > 24);
+  }
+  function setMenu(open: boolean) {
+    const btn = document.getElementById('menu-toggle');
+    const menu = document.getElementById('mobile-menu');
+    const icon = document.getElementById('menu-icon');
+    const header = document.querySelector('.site-header');
+    if (!btn || !menu) return;
+    if (open) menu.removeAttribute('hidden'); else menu.setAttribute('hidden', '');
+    btn.setAttribute('aria-expanded', String(open));
+    btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    icon?.setAttribute('d', open ? 'M6 6l12 12M6 18L18 6' : 'M3 6h18M3 12h18M3 18h18');
+    if (header?.classList.contains('is-overlay')) header.classList.toggle('scrolled', open);
+    if (open) (menu.querySelector('a') as HTMLElement | null)?.focus();
+  }
+  function initHeader() {
+    if (!scrollBound) { scrollBound = true; window.addEventListener('scroll', syncOverlay, { passive: true }); }
+    if (!escBound) {
+      escBound = true;
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !document.getElementById('mobile-menu')?.hasAttribute('hidden')) {
+          setMenu(false);
+          document.getElementById('menu-toggle')?.focus();
+        }
+      });
+    }
+    syncOverlay();
+    // The header is swapped on each View Transition nav, so the button is a fresh
+    // element — bind directly each page-load (no accumulation on the old node).
+    document.getElementById('menu-toggle')?.addEventListener('click', () => {
+      setMenu(document.getElementById('mobile-menu')?.hasAttribute('hidden') ?? false);
+    });
+  }
+  document.addEventListener('astro:page-load', initHeader);
+</script>

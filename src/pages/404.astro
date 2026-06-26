@@ -1,0 +1,15 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+---
+<SiteLayout title="Page not found — Tour Guide Ecuador" description="The page you're looking for has moved or no longer exists." noindex>
+  <section class="container-page flex min-h-[60svh] flex-col items-center justify-center py-24 text-center">
+    <p class="eyebrow eyebrow--center">Error 404</p>
+    <h1 class="mt-4 font-display text-5xl">This trail leads nowhere.</h1>
+    <p class="mt-3 max-w-md text-lg text-ink-600">The page may have moved. Let's get you back on the map.</p>
+    <div class="mt-8 flex flex-wrap justify-center gap-3">
+      <a href="/cruises" class="btn btn-primary">Galápagos cruises</a>
+      <a href="/tours" class="btn btn-outline">Ecuador tours</a>
+      <a href="/" class="btn btn-outline">Home</a>
+    </div>
+  </section>
+</SiteLayout>

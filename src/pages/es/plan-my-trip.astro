@@ -1,0 +1,13 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import PlanWizard from '../../components/PlanWizard.astro';
+import { localizePath } from '../../i18n/ui';
+---
+<SiteLayout
+  localized
+  title="Planea tu viaje — Ecuador y Galápagos a tu medida | Tour Guide Ecuador"
+  description="Cuéntanos lo que sueñas y diseñamos un crucero por Galápagos o un itinerario por Ecuador a tu medida — con un presupuesto sin compromiso. Toma dos minutos."
+  canonicalPath={localizePath('/plan-my-trip', 'es')}
+>
+  <PlanWizard />
+</SiteLayout>

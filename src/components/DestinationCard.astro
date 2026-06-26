@@ -1,0 +1,22 @@
+---
+import { Image } from 'astro:assets';
+import { destinationUrl } from '../lib/content';
+import type { Destination } from '../lib/content';
+import { getLangFromUrl, localizePath } from '../i18n/ui';
+interface Props { destination: Destination; class?: string }
+const { destination, class: cls = '' } = Astro.props;
+const { title, heroImage, heroImageAlt, excerpt } = destination.data;
+const href = localizePath(destinationUrl(destination.data.slug), getLangFromUrl(Astro.url));
+---
+<a href={href} class={`group relative block overflow-hidden rounded-2xl ${cls}`}>
+  {heroImage && (
+    <Image src={heroImage} alt={heroImageAlt ?? title} width={680} height={520}
+      transition:name={`dest-img-${destination.data.slug}`}
+      class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+  )}
+  <div class="absolute inset-0 bg-gradient-to-t from-ink-950/85 via-ink-950/15 to-transparent"></div>
+  <div class="absolute inset-x-0 bottom-0 p-5">
+    <h3 class="font-display text-xl text-white">{title}</h3>
+    <p class="mt-1 line-clamp-2 text-sm text-white/80">{excerpt}</p>
+  </div>
+</a>

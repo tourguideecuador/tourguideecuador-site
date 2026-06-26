@@ -1,0 +1,89 @@
+---
+/*
+  Cruise inquiry form — Netlify Forms (static, no backend) delivering to info@.
+  Spam protection: hidden honeypot + Cloudflare Turnstile widget (rendered when
+  PUBLIC_TURNSTILE_SITE_KEY is set). Netlify's built-in Akismet also applies.
+*/
+import { getLangFromUrl, localizePath } from '../i18n/ui';
+interface Props { subject?: string; compact?: boolean }
+const { subject = '', compact = false } = Astro.props;
+const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+const lang = getLangFromUrl(Astro.url);
+const es = lang === 'es';
+const tr = {
+  name: es ? 'Tu nombre' : 'Your name',
+  namePh: es ? 'Juana Viajera' : 'Jane Traveller',
+  email: es ? 'Correo electrónico' : 'Email',
+  dates: es ? 'Fechas aproximadas' : 'Approx. travel dates',
+  datesPh: es ? 'p. ej. finales de agosto de 2026' : 'e.g. late August 2026',
+  travellers: es ? 'Viajeros' : 'Travellers',
+  travellersPh: es ? '2 adultos' : '2 adults',
+  message: es ? '¿Qué te gustaría vivir?' : 'What are you dreaming of?',
+  messagePh: es ? (subject ? `Me interesa ${subject}…` : 'Cuéntanos sobre tu viaje…') : (subject ? `I'm interested in ${subject}…` : 'Tell us about your trip…'),
+  send: es ? 'Enviar consulta' : 'Send enquiry',
+  reassure: es ? 'Respondemos en un día hábil. Consultar no tiene costo.' : 'We reply within one business day. No deposit to enquire.',
+};
+---
+<form
+  name="cruise-inquiry"
+  method="POST"
+  data-netlify="true"
+  netlify-honeypot="bot-field"
+  action={localizePath('/thank-you/', lang)}
+  data-astro-reload
+  class="space-y-4"
+>
+  <input type="hidden" name="form-name" value="cruise-inquiry" />
+  <input type="hidden" name="interested-in" value={subject} />
+  <p class="hidden">
+    <label>Don't fill this out: <input name="bot-field" /></label>
+  </p>
+
+  <div class={compact ? 'grid gap-4' : 'grid gap-4 sm:grid-cols-2'}>
+    <label class="block">
+      <span class="mb-1.5 block text-sm font-medium text-ink-700">{tr.name}</span>
+      <input required name="name" autocomplete="name" class="form-input" placeholder={tr.namePh} />
+    </label>
+    <label class="block">
+      <span class="mb-1.5 block text-sm font-medium text-ink-700">{tr.email}</span>
+      <input required type="email" name="email" autocomplete="email" class="form-input" placeholder="you@email.com" />
+    </label>
+    <label class="block">
+      <span class="mb-1.5 block text-sm font-medium text-ink-700">{tr.dates}</span>
+      <input name="dates" class="form-input" placeholder={tr.datesPh} />
+    </label>
+    <label class="block">
+      <span class="mb-1.5 block text-sm font-medium text-ink-700">{tr.travellers}</span>
+      <input name="travellers" inputmode="numeric" class="form-input" placeholder={tr.travellersPh} />
+    </label>
+  </div>
+  <label class="block">
+    <span class="mb-1.5 block text-sm font-medium text-ink-700">{tr.message}</span>
+    <textarea name="message" rows="4" class="form-input" placeholder={tr.messagePh}></textarea>
+  </label>
+
+  {turnstileKey && (
+    <>
+      <div class="cf-turnstile" data-sitekey={turnstileKey}></div>
+      <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer is:inline></script>
+    </>
+  )}
+
+  <button type="submit" class="btn btn-primary w-full !py-4 text-base">{tr.send}</button>
+  <p class="text-center text-xs text-ink-500">{tr.reassure}</p>
+</form>
+
+<style>
+  .form-input {
+    width: 100%;
+    border-radius: 0.6rem;
+    border: 1.5px solid var(--color-sand-300);
+    background: var(--color-sand-50);
+    padding: 0.7rem 0.9rem;
+    font-size: 0.95rem;
+    color: var(--color-ink-900);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .form-input::placeholder { color: var(--color-ink-400); }
+  .form-input:focus { outline: none; border-color: var(--color-brand-500); box-shadow: 0 0 0 3px rgba(216,96,0,0.12); }
+</style>

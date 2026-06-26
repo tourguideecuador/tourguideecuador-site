@@ -1,0 +1,127 @@
+---
+import { Image } from 'astro:assets';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import CruiseCard from '../components/CruiseCard.astro';
+import TourCard from '../components/TourCard.astro';
+import DestinationCard from '../components/DestinationCard.astro';
+import ReviewCard from '../components/ReviewCard.astro';
+import { SITE } from '../lib/site';
+import {
+  featuredCruises, featuredTours, featuredDestinations, getReviews, aggregateRating,
+} from '../lib/content';
+import hero from '../assets/site/hero-cotopaxi.jpg';
+import CredibilityStrip from '../components/CredibilityStrip.astro';
+import JsonLd from '../components/JsonLd.astro';
+import { travelAgencySchema } from '../lib/schema';
+
+const cruises = await featuredCruises();
+const tours = await featuredTours();
+const destinations = await featuredDestinations();
+const reviews = (await getReviews()).slice(0, 3);
+const rating = await aggregateRating();
+---
+<SiteLayout
+  overlayHeader
+  localized
+  title="Tour Guide Ecuador — Galápagos Cruises & Tailor-Made Ecuador Tours"
+  description="Quito-based travel agency for Galápagos cruises, island hopping, Amazon and Andes day tours. Tailor-made trips, expert local guides — recommended by The New York Times."
+>
+  <JsonLd slot="head" schema={travelAgencySchema(rating)} />
+
+  <!-- HERO -->
+  <section class="relative isolate flex min-h-[92svh] items-end overflow-hidden">
+    <Image src={hero} alt="The snow-capped Cotopaxi volcano under a deep blue Andean sky" widths={[768, 1280, 1920, 2400]} sizes="100vw" fetchpriority="high" loading="eager" class="absolute inset-0 -z-10 h-full w-full object-cover" />
+    <div class="absolute inset-0 -z-10 bg-gradient-to-t from-ink-950/85 via-ink-950/30 to-ink-950/40"></div>
+    <div class="container-page w-full pb-16 pt-32 sm:pb-24">
+      <p class="eyebrow text-brand-300 reveal" style="animation-delay:.05s">
+        <span class="text-white/90">{SITE.hero.eyebrow}</span>
+      </p>
+      <h1 class="reveal mt-5 max-w-4xl font-display text-[var(--text-hero)] font-medium leading-[0.98] text-white" style="animation-delay:.12s">
+        {SITE.hero.heading}
+      </h1>
+      <p class="reveal mt-6 max-w-xl text-lg leading-relaxed text-white/85" style="animation-delay:.2s">
+        {SITE.hero.subheading}
+      </p>
+      <div class="reveal mt-9 flex flex-wrap items-center gap-4" style="animation-delay:.28s">
+        <a href={SITE.hero.ctaPrimaryHref} class="btn btn-primary !px-7 !py-4 text-base">{SITE.hero.ctaPrimaryLabel}</a>
+        <a href={SITE.hero.ctaSecondaryHref} class="btn btn-ghost !px-7 !py-4 text-base">{SITE.hero.ctaSecondaryLabel}</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST / credibility -->
+  <CredibilityStrip />
+
+  <!-- FEATURED CRUISES -->
+  <section class="container-page py-20 sm:py-28">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="eyebrow">The Enchanted Islands</p>
+        <h2 class="mt-3 text-[var(--text-display)]">Featured Galápagos cruises</h2>
+      </div>
+      <a href="/cruises" class="btn btn-outline">All 13 vessels →</a>
+    </div>
+    <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3" data-reveal-stagger>
+      {cruises.map((c, i) => <CruiseCard cruise={c} featured={i === 0} class={i === 0 ? 'lg:row-span-2 lg:col-span-1' : ''} />)}
+    </div>
+  </section>
+
+  <!-- DESTINATIONS -->
+  <section class="bg-ink-900 py-20 text-sand-100 sm:py-28">
+    <div class="container-page">
+      <div class="max-w-2xl">
+        <p class="eyebrow text-brand-300">Four worlds, one country</p>
+        <h2 class="mt-3 text-[var(--text-display)] text-white">Where will Ecuador take you?</h2>
+        <p class="mt-4 text-ink-300">From the equatorial line to glacier-capped volcanoes, cloudforests alive with birdsong, and the islands that reshaped how we see life itself.</p>
+      </div>
+      <div class="mt-10 grid auto-rows-[14rem] grid-cols-2 gap-4 sm:auto-rows-[16rem] lg:grid-cols-4" data-reveal-stagger>
+        {destinations.map((d, i) => (
+          <DestinationCard destination={d} class={i === 0 ? 'col-span-2 row-span-2' : ''} />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURED TOURS -->
+  <section class="container-page py-20 sm:py-28">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="eyebrow">Mainland Ecuador</p>
+        <h2 class="mt-3 text-[var(--text-display)]">Day tours from Quito</h2>
+      </div>
+      <a href="/tours" class="btn btn-outline">All day tours →</a>
+    </div>
+    <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4" data-reveal-stagger>
+      {tours.slice(0, 4).map((t) => <TourCard tour={t} />)}
+    </div>
+  </section>
+
+  <!-- REVIEWS -->
+  <section class="bg-sand-200/60 py-20 sm:py-28">
+    <div class="container-page">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p class="eyebrow">In their words</p>
+          <h2 class="mt-3 text-[var(--text-display)]">Travellers on Tour Guide Ecuador</h2>
+        </div>
+        <a href="/reviews" class="btn btn-outline">Read all reviews →</a>
+      </div>
+      <div class="mt-10 grid gap-6 md:grid-cols-3" data-reveal-stagger>
+        {reviews.map((r) => <ReviewCard review={r} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- CLOSING CTA -->
+  <section class="relative isolate overflow-hidden bg-brand-600 py-20 text-white sm:py-24">
+    <div class="grain absolute inset-0 -z-10 opacity-30"></div>
+    <div class="container-page text-center">
+      <h2 class="mx-auto max-w-2xl text-[var(--text-display)] text-white">Let's plan the trip you'll never stop talking about.</h2>
+      <p class="mx-auto mt-4 max-w-xl text-white">Tell us your dates and dreams — we'll craft an itinerary and quote, no obligation.</p>
+      <div class="mt-8 flex flex-wrap justify-center gap-4">
+        <a href={SITE.whatsappHref} target="_blank" rel="noopener" class="btn btn-dark !px-7 !py-4 text-base">Chat on WhatsApp</a>
+        <a href="/contact-us" class="btn !bg-white !text-brand-700 hover:!bg-sand-100 !px-7 !py-4 text-base">Send an enquiry</a>
+      </div>
+    </div>
+  </section>
+</SiteLayout>

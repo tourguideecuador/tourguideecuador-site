@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 160" role="img" aria-label="Tour Guide Ecuador">
+  <g transform="translate(0,0)">
+    <circle cx="80" cy="80" r="78" fill="#D86000"/>
+    <g fill="#2c2c2c" transform="translate(80,80) scale(0.6) translate(-100,-100)">
+      <polygon points="88,50 92,40 100,34 108,40 112,50 100,58"/>
+      <polygon points="100,62 130,84 130,126 100,148 70,126 70,84"/>
+      <polygon points="36,74 50,64 72,78 68,84"/>
+      <polygon points="164,74 150,64 128,78 132,84"/>
+      <polygon points="36,136 50,146 72,132 68,126"/>
+      <polygon points="164,136 150,146 128,132 132,126"/>
+      <polygon points="94,150 106,150 100,162"/>
+    </g>
+    <g fill="none" stroke="#D86000" stroke-width="2.04" stroke-linejoin="round"
+       transform="translate(80,80) scale(0.6) translate(-100,-100)">
+      <polygon points="100,87 113,96 113,114 100,123 87,114 87,96"/>
+      <line x1="100" y1="87" x2="100" y2="62"/><line x1="113" y1="96" x2="130" y2="84"/>
+      <line x1="113" y1="114" x2="130" y2="126"/><line x1="100" y1="123" x2="100" y2="148"/>
+      <line x1="87" y1="114" x2="70" y2="126"/><line x1="87" y1="96" x2="70" y2="84"/>
+    </g>
+  </g>
+  <text x="184" y="74" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="40" fill="#303030">Tour Guide</text>
+  <text x="186" y="116" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="40" letter-spacing="11" fill="#D86000">ECUADOR</text>
+</svg>

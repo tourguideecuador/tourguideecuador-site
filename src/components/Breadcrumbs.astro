@@ -1,0 +1,22 @@
+---
+import JsonLd from './JsonLd.astro';
+import { breadcrumbSchema } from '../lib/schema';
+interface Props { items: { name: string; url: string }[] }
+const { items } = Astro.props;
+const all = [{ name: 'Home', url: '/' }, ...items];
+---
+<nav aria-label="Breadcrumb" class="text-sm text-ink-500">
+  <ol class="flex flex-wrap items-center gap-1.5">
+    {all.map((it, i) => (
+      <li class="flex items-center gap-1.5">
+        {i > 0 && <span class="text-ink-300" aria-hidden="true">/</span>}
+        {i < all.length - 1 ? (
+          <a href={it.url} class="transition-colors hover:text-brand-600">{it.name}</a>
+        ) : (
+          <span class="text-ink-700" aria-current="page">{it.name}</span>
+        )}
+      </li>
+    ))}
+  </ol>
+</nav>
+<JsonLd schema={breadcrumbSchema(all)} />

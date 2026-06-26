@@ -1,0 +1,16 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import TourDetail from '../../../components/TourDetail.astro';
+import { getTours, tourUrl } from '../../../lib/content';
+import { localizePath } from '../../../i18n/ui';
+
+export async function getStaticPaths() {
+  const tours = await getTours();
+  return tours.map((tour) => ({ params: { slug: tour.data.slug }, props: { tour } }));
+}
+const { tour } = Astro.props;
+const d = tour.data;
+---
+<SiteLayout localized title={d.metaTitle} description={d.metaDescription} canonicalPath={localizePath(tourUrl(d.slug), 'es')}>
+  <TourDetail tour={tour} />
+</SiteLayout>

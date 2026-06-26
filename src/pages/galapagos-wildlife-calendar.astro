@@ -1,0 +1,27 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import JsonLd from '../components/JsonLd.astro';
+import WildlifeCalendar from '../components/WildlifeCalendar.astro';
+import { SITE } from '../lib/site';
+
+const canonical = '/galapagos-wildlife-calendar';
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: 'Galápagos wildlife calendar — the best time to visit',
+  description:
+    'A month-by-month guide to Galápagos wildlife, weather and sea conditions to help you choose the best time to visit.',
+  author: { '@type': 'Organization', name: SITE.name },
+  publisher: { '@type': 'Organization', name: SITE.name },
+  mainEntityOfPage: `${SITE.url}${canonical}`,
+};
+---
+<SiteLayout
+  localized
+  title="Galápagos Wildlife Calendar — Best Time to Visit | Tour Guide Ecuador"
+  description="Month-by-month Galápagos wildlife calendar: when to see waved albatross, blue-footed booby courtship, sea-lion pups, whales, nesting turtles and the best diving. Plan the perfect time to go."
+  canonicalPath={canonical}
+>
+  <JsonLd slot="head" schema={schema} />
+  <WildlifeCalendar />
+</SiteLayout>
