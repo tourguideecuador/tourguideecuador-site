@@ -107,6 +107,10 @@ export default config({
         slug: fields.text({ label: 'URL slug (preserve old)', description: 'Old WordPress slug for 301s.' }),
         destination: fields.relationship({ label: 'Destination', collection: 'destinations' }),
         type: fields.relationship({ label: 'Primary tour type', collection: 'tourTypes' }),
+        secondaryTypes: fields.array(
+          fields.relationship({ label: 'Secondary tour type', collection: 'tourTypes' }),
+          { label: 'Secondary tour types', itemLabel: (props) => props.value ?? 'Type' },
+        ),
         durationLabel: fields.text({ label: 'Duration label' }),
         priceFrom: fields.number({ label: 'Price from (USD) — optional, via Bokun' }),
         bokunExperienceId: fields.text({ label: 'Bokun experience ID (⏳ later)' }),
