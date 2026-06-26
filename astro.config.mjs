@@ -18,7 +18,6 @@ import tailwindcss from '@tailwindcss/vite';
  *                                          client edits at /keystatic on the live site.
  *
  * Output stays `static`; only the Keystatic admin routes are on-demand (mode 3).
- * See HANDOVER.md for the one-time account wiring.
  */
 const isDev = process.argv.includes('dev');
 const cloudEditing = !!(process.env.PUBLIC_KEYSTATIC_CLOUD_PROJECT || process.env.PUBLIC_KEYSTATIC_GITHUB_REPO);

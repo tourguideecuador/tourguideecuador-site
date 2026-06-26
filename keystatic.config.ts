@@ -8,7 +8,6 @@ import { config, fields, collection, singleton } from '@keystatic/core';
     • dev (npm run dev)                       → local (edits files on disk)
     • prod + PUBLIC_KEYSTATIC_CLOUD_PROJECT    → Keystatic Cloud (client email login)
     • prod + PUBLIC_KEYSTATIC_GITHUB_REPO      → GitHub mode (GitHub login)
-  See HANDOVER.md for the one-time account wiring.
 
   IMAGES: stored in src/assets/<collection>/ with a relative publicPath
   (../../assets/<collection>/) so Astro's content `image()` resolves & optimizes
