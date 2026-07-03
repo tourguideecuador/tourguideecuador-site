@@ -47,13 +47,18 @@ export function productSchema(opts: {
     ...(opts.image ? { image: opts.image } : {}),
     url: opts.url,
     brand: { '@type': 'Brand', name: SITE.name },
-    offers: {
-      '@type': 'Offer',
-      ...(opts.priceFrom ? { price: opts.priceFrom, priceCurrency: 'USD' } : {}),
-      availability: 'https://schema.org/InStock',
-      url: opts.url,
-      seller: { '@id': ORG_ID },
-    },
+    ...(opts.priceFrom
+      ? {
+          offers: {
+            '@type': 'Offer',
+            price: opts.priceFrom,
+            priceCurrency: 'USD',
+            availability: 'https://schema.org/InStock',
+            url: opts.url,
+            seller: { '@id': ORG_ID },
+          },
+        }
+      : {}),
   };
 }
 

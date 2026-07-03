@@ -46,7 +46,7 @@ const facts = [
 <JsonLd slot="head" schema={productSchema({ name: d.title, description: d.metaDescription, url: `${SITE.url}${canonical}`, priceFrom: d.priceFrom })} />
 
 <section class="relative isolate overflow-hidden bg-ink-900">
-  <Image src={d.heroImage} alt={d.heroImageAlt ?? d.title} widths={[768, 1280, 1800]} sizes="100vw" transition:name={`tour-img-${d.slug}`} class="absolute inset-0 h-full w-full object-cover opacity-70" loading="eager" />
+  <Image src={d.heroImage} alt={d.heroImageAlt ?? d.title} widths={[768, 1280, 1800]} sizes="100vw" transition:name={`tour-img-${d.slug}`} class="absolute inset-0 h-full w-full object-cover opacity-70" loading="eager" fetchpriority="high" />
   <div class="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/40 to-ink-950/30"></div>
   <div class="container-page relative py-16 text-white sm:py-24">
     <div class="[&_*]:!text-white/80"><Breadcrumbs items={[{ name: tr.tours, url: L('/tours') }, { name: dest, url: L(destinationUrl(d.destination.id)) }, { name: d.title, url: canonical }]} /></div>

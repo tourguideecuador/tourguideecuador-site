@@ -18,10 +18,15 @@ interface Props {
 const { overlayHeader = false, localized = false, ...seo } = Astro.props;
 // Show the language switcher only where a counterpart exists: ES pages always
 // have an EN original; EN pages must opt in via `localized`.
-const showLangSwitch = getLangFromUrl(Astro.url) === 'es' || localized;
+const lang = getLangFromUrl(Astro.url);
+const showLangSwitch = lang === 'es' || localized;
 ---
 <BaseLayout {...seo} localized={localized}>
   <slot name="head" slot="head" />
+  <a
+    href="#main"
+    class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-brand-600 focus:px-5 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg"
+  >{lang === 'es' ? 'Saltar al contenido' : 'Skip to content'}</a>
   <Header overlay={overlayHeader} langSwitch={showLangSwitch} />
   <main id="main" class:list={[!overlayHeader && 'pt-[var(--header-h,4.75rem)]']}>
     <slot />

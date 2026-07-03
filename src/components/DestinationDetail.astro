@@ -25,7 +25,7 @@ const toursLabel = es
   : `${tours.length} ${tours.length === 1 ? 'tour' : 'tours'} in ${d.title}`;
 ---
 <section class="relative isolate overflow-hidden bg-ink-900">
-  {d.heroImage && <Image src={d.heroImage} alt={d.heroImageAlt ?? d.title} widths={[768, 1280, 1800]} sizes="100vw" transition:name={`dest-img-${d.slug}`} class="absolute inset-0 h-full w-full object-cover opacity-65" loading="eager" />}
+  {d.heroImage && <Image src={d.heroImage} alt={d.heroImageAlt ?? d.title} widths={[768, 1280, 1800]} sizes="100vw" transition:name={`dest-img-${d.slug}`} class="absolute inset-0 h-full w-full object-cover opacity-65" loading="eager" fetchpriority="high" />}
   <div class="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/40 to-ink-950/30"></div>
   <div class="container-page relative py-16 text-white sm:py-24">
     <div class="[&_*]:!text-white/80"><Breadcrumbs items={[{ name: t('nav.destinations'), url: L('/destinations') }, { name: d.title, url: canonical }]} /></div>

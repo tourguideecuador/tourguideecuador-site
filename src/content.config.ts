@@ -6,6 +6,10 @@ import { glob } from 'astro/loaders';
   Locale-aware (en + es). Slugs are preserved for SEO continuity.
 */
 
+// Keystatic saves an untouched new array row as `null`; drop those instead of
+// failing the whole build.
+const dropNulls = (v: unknown) => (Array.isArray(v) ? v.filter((x) => x != null) : v);
+
 const seo = {
   metaTitle: z.string(),
   metaDescription: z.string(),
@@ -21,7 +25,7 @@ const tours = defineCollection({
       slug: z.string(), // preserved old slug for 301s
       destination: reference('destinations'),
       type: reference('tourTypes'),
-      secondaryTypes: z.array(reference('tourTypes')).default([]),
+      secondaryTypes: z.preprocess(dropNulls, z.array(reference('tourTypes')).default([])),
       months: z.array(z.string()).default([]), // best-season metadata only — no archive pages
       durationHours: z.number().optional(),
       durationLabel: z.string().optional(), // e.g. "Full day"
@@ -30,7 +34,7 @@ const tours = defineCollection({
       bokunExperienceId: z.string().optional(), // ⏳ filled when client creates experiences
       heroImage: image(),
       heroImageAlt: z.string().optional(),
-      gallery: z.array(image()).default([]),
+      gallery: z.preprocess(dropNulls, z.array(image()).default([])),
       excerpt: z.string(),
       featured: z.boolean().default(false),
       order: z.number().default(0),
@@ -59,7 +63,7 @@ const cruises = defineCollection({
         .default([]),
       heroImage: image(),
       heroImageAlt: z.string().optional(),
-      gallery: z.array(image()).default([]),
+      gallery: z.preprocess(dropNulls, z.array(image()).default([])),
       excerpt: z.string(),
       featured: z.boolean().default(false),
       order: z.number().default(0),

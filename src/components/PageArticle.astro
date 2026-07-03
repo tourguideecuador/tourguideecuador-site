@@ -23,7 +23,7 @@ const overviewLabel = getLangFromUrl(Astro.url) === 'es' ? 'Contenido de la pág
 
 {d.heroImage && (
   <div class="container-page -mt-2 pt-8">
-    <Image src={d.heroImage} alt={d.heroImageAlt ?? d.title} width={1200} height={600} class="aspect-[2/1] w-full rounded-2xl object-cover" loading="eager" />
+    <Image src={d.heroImage} alt={d.heroImageAlt ?? d.title} width={1200} height={600} class="aspect-[2/1] w-full rounded-2xl object-cover" loading="eager" fetchpriority="high" />
   </div>
 )}
 

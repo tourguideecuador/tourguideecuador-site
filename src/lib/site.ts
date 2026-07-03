@@ -30,7 +30,7 @@ interface Settings {
 }
 const settings = settingsData as Settings;
 
-const num = settings.whatsappNumber.replace(/\D/g, '');
+const num = (settings.whatsappNumber || '593991946532').replace(/\D/g, '');
 const display = `+${num.slice(0, 3)} ${num.slice(3, 5)} ${num.slice(5, 8)} ${num.slice(8)}`.trimEnd();
 
 export const SITE = {
