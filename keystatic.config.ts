@@ -105,7 +105,7 @@ export default config({
       columns: ['title', 'destination'],
       schema: {
         title: fields.slug({ name: { label: 'Title' } }),
-        slug: fields.text({ label: 'URL slug (preserve old)', description: 'Old WordPress slug for 301s.' }),
+        slug: fields.text({ label: 'URL slug (preserve old)', description: 'Old WordPress slug for 301s.', validation: { length: { min: 1 } } }),
         destination: fields.relationship({ label: 'Destination', collection: 'destinations', validation: { isRequired: true } }),
         type: fields.relationship({ label: 'Primary tour type', collection: 'tourTypes', validation: { isRequired: true } }),
         secondaryTypes: fields.array(
@@ -132,7 +132,7 @@ export default config({
       columns: ['title', 'vesselClass'],
       schema: {
         title: fields.slug({ name: { label: 'Title' } }),
-        slug: fields.text({ label: 'URL slug (preserve old)' }),
+        slug: fields.text({ label: 'URL slug (preserve old)', validation: { length: { min: 1 } } }),
         vesselClass: fields.select({
           label: 'Vessel class',
           options: [
@@ -163,7 +163,7 @@ export default config({
       entryLayout: 'content',
       schema: {
         title: fields.slug({ name: { label: 'Title' } }),
-        slug: fields.text({ label: 'URL slug (preserve old)' }),
+        slug: fields.text({ label: 'URL slug (preserve old)', validation: { length: { min: 1 } } }),
         excerpt: fields.text({ label: 'Excerpt', multiline: true, validation: { length: { min: 1 } } }),
         featured: fields.checkbox({ label: 'Featured on homepage' }),
         ...heroFields('destinations'),
@@ -179,7 +179,7 @@ export default config({
       entryLayout: 'content',
       schema: {
         title: fields.slug({ name: { label: 'Title' } }),
-        slug: fields.text({ label: 'URL slug (preserve old)' }),
+        slug: fields.text({ label: 'URL slug (preserve old)', validation: { length: { min: 1 } } }),
         excerpt: fields.text({ label: 'Excerpt', multiline: true, validation: { length: { min: 1 } } }),
         ...heroFields('tourTypes'),
         ...seoFields,
@@ -194,7 +194,7 @@ export default config({
       entryLayout: 'content',
       schema: {
         title: fields.slug({ name: { label: 'Title' } }),
-        slug: fields.text({ label: 'URL slug (preserve old)' }),
+        slug: fields.text({ label: 'URL slug (preserve old)', validation: { length: { min: 1 } } }),
         ...heroFields('pages'),
         ...seoFields,
         content: fields.mdx({ label: 'Body' }),
@@ -211,7 +211,7 @@ export default config({
         author: fields.slug({ name: { label: 'Author' } }),
         location: fields.text({ label: 'Location' }),
         date: fields.text({ label: 'Date' }),
-        rating: fields.number({ label: 'Rating (1–5)', defaultValue: 5 }),
+        rating: fields.number({ label: 'Rating (1–5)', defaultValue: 5, validation: { isRequired: true, min: 1, max: 5 } }),
         tour: fields.text({ label: 'Tour (optional)' }),
         featured: fields.checkbox({ label: 'Featured' }),
         oldSlug: fields.text({ label: 'Old review slug (for 301)' }),
